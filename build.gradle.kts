@@ -4,6 +4,7 @@ plugins {
 
 group = "edu.hse"
 version = "1.0-SNAPSHOT"
+val antlr by configurations.creating
 
 repositories {
     mavenCentral()
@@ -11,4 +12,5 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
+    antlr("org.antlr.antlr4-runtime:4.9.1")
 }
