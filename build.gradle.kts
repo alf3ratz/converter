@@ -1,5 +1,8 @@
+import org.jetbrains.kotlin.gradle.plugin.statistics.ReportStatisticsToElasticSearch.url
+
 plugins {
-    kotlin("jvm") version "1.5.31"
+    kotlin("jvm") version "1.6.10"
+    `kotlin-dsl`
     application
 }
 application {
@@ -10,22 +13,16 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
-    maven(url = "https://mvnrepository.com/artifact")
+    //maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/bootstrap") }
+    //maven(url = "https://mvnrepository.com/artifact")
 }
-//sourceSets {
-//    main {
-//        java.srcDir("edu.hse.main.mainKt")
-//    }
-//}
-//tasks.withType<Jar> {
-//    manifest {
-//        attributes["Main-Class"] = "edu.hse.main.main"
-//    }
-//}
 
 
 dependencies {
     implementation(kotlin("stdlib"))
-    runtimeOnly("org.jetbrains.kotlin:kotlin-compiler-for-ide:1.5.10-release-891")
+    implementation(fileTree(mapOf("dir" to "lib", "include" to listOf("*.jar"))))
+    //implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10")
+    runtimeOnly("org.jetbrains.kotlin:kotlin-compiler-for-ide:1.6.20-dev-6927")
     implementation("org.jetbrains.kotlin:kotlin-compiler:1.3.70")
+    //implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.10")
 }
