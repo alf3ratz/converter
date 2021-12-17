@@ -13,16 +13,14 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
-    //maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/bootstrap") }
-    //maven(url = "https://mvnrepository.com/artifact")
+    maven { url = uri("https://jitpack.io") }
 }
 
 
 dependencies {
     implementation(kotlin("stdlib"))
     implementation(fileTree(mapOf("dir" to "lib", "include" to listOf("*.jar"))))
-    //implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10")
     runtimeOnly("org.jetbrains.kotlin:kotlin-compiler-for-ide:1.6.20-dev-6927")
     implementation("org.jetbrains.kotlin:kotlin-compiler:1.3.70")
-    //implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.10")
+    implementation("com.github.JetBrains:intellij-community:webstorm~193.4099.10")
 }
