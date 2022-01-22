@@ -13,14 +13,15 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
-    maven { url = uri("https://jitpack.io") }
+    //maven { url = uri("https://jitpack.io") }
 }
 
 
 dependencies {
     implementation(kotlin("stdlib"))
     implementation(fileTree(mapOf("dir" to "lib", "include" to listOf("*.jar"))))
-    runtimeOnly("org.jetbrains.kotlin:kotlin-compiler-for-ide:1.6.20-dev-6927")
+    //runtimeOnly("org.jetbrains.kotlin:kotlin-compiler-for-ide:1.6.20-dev-6737")
     implementation("org.jetbrains.kotlin:kotlin-compiler:1.3.70")
-    implementation("com.github.JetBrains:intellij-community:webstorm~193.4099.10")
+    implementation("org.junit.jupiter:junit-jupiter:5.7.0")
+    //implementation("com.github.JetBrains:intellij-community:webstorm~193.4099.10")
 }

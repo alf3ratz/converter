@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.nj2k.JKSymbolProvider
 import org.jetbrains.kotlin.nj2k.printing.JKCodeBuilder
 
 fun main(args: Array<String>) {
