@@ -1,11 +1,11 @@
-import antlr4.CppLangLexer
-import antlr4.CppLangParser
+
+import edu.hse.CppLangLexer
 import org.antlr.v4.kotlinruntime.CharStreams
-import org.antlr.v4.kotlinruntime.CommonTokenStream
-//import org.antlr.v4.runtime.CharStreams
-//import org.antlr.v4.runtime.CommonTokenStream
-import java.io.File
-import java.io.InputStream
+
+
+//import org.antlr.v4.kotlinruntime.CharStreams
+
+
 
 
 private fun printUsage(program: String) {
@@ -30,10 +30,7 @@ fun main(args: Array<String>) {
         printUsage("converter")
         return
     }
-//    val inputStream: InputStream = File(args[0]).inputStream()
-//    val lineList = mutableListOf<String>()
-//    inputStream.bufferedReader().forEachLine { lineList.add(it) }
-    var str = "#include <iostream>\n" +
+    val str = "#include <iostream>\n" +
             "\n" +
             "int main(){\n" +
             "    std::cout << \"Hello world!\" << std::endl;\n" +
@@ -41,10 +38,10 @@ fun main(args: Array<String>) {
             "}"//lineList.toString();
     val input = CharStreams.fromString(str)
     val lexer = CppLangLexer(input)//ANTLRInputStream(str)
-    val interpreter = lexer.interpreter
-    var tokens = lexer.allTokens
-    tokens.forEach { println("> $it") }
-    val parser = CppLangParser(CommonTokenStream(lexer))
+    //val interpreter = lexer.interpreter
+    //val tokens = lexer.allTokens
+    //tokens.forEach { println("> $it") }
+    //val parser = CppLangParser(CommonTokenStream(lexer))
 
     //val root = parser.
 //    val stream:ANTLRInputStream = ANTLRInputStream(input);
