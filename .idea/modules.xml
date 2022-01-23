@@ -3,9 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/converter.iml" filepath="$PROJECT_DIR$/.idea/modules/converter.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/antlr-kotlin-gradle-plugin/converter.antlr-kotlin-gradle-plugin.iml" filepath="$PROJECT_DIR$/.idea/modules/antlr-kotlin-gradle-plugin/converter.antlr-kotlin-gradle-plugin.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/antlr-kotlin-runtime/converter.antlr-kotlin-runtime.iml" filepath="$PROJECT_DIR$/.idea/modules/antlr-kotlin-runtime/converter.antlr-kotlin-runtime.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/antlr-kotlin-target/converter.antlr-kotlin-target.iml" filepath="$PROJECT_DIR$/.idea/modules/antlr-kotlin-target/converter.antlr-kotlin-target.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/converter.main.iml" filepath="$PROJECT_DIR$/.idea/modules/converter.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/converter.test.iml" filepath="$PROJECT_DIR$/.idea/modules/converter.test.iml" />
     </modules>

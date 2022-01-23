@@ -1,50 +1,61 @@
 
-
 plugins {
     kotlin("jvm") version "1.6.0"
     application
-    //id("com.strumenta.antlr-kotlin") version "0.0.4"
+    //id("com.strumenta.antlr-kotlin") version "0.0.7"
 }
 application {
     mainClass.set("MainKt")
 }
-val group: String by project//group = "edu.hse"
+//val group: String by project//group = "edu.hse"
 //version = "1.0-SNAPSHOT"
 val antlr by configurations.creating
+
+
+
+repositories {
+    mavenCentral()
+    maven("https://jitpack.io")
+
+}
+
+
+dependencies {
+    implementation(kotlin("stdlib"))
+    //implementation ("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.0")
+
+    // implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.0")
+
+    //implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
+    implementation(kotlin("reflect"))
+    //testImplementation(kotlin("test-junit5"))
+    api("org.antlr:antlr4:4.9.3")
+    antlr("org.antlr.antlr4-runtime:4.9.1")
+    implementation("com.strumenta.antlr-kotlin:antlr-kotlin-gradle-plugin:160bc0b70f")
+    implementation("com.strumenta.antlr-kotlin:antlr-kotlin-runtime:160bc0b70f")
+}
+val version: String by project
+// we create an alias here...
+val versionProperty = version
+// do the same for group
+val group: String by project
 val groupProperty = if (group.endsWith(".antlr-kotlin")) {
     group
 } else {
     // just another jitpack hack
     "$group.antlr-kotlin"
 }
-val version: String by project
-// we create an alias here...
-val versionProperty = version
+
+//val antlrVersion = "4.7.1"
 val antlrKotlinVersion = versionProperty
-//val commonAntlr by creating {
-//
-//    repositories {
-//        //mavenLocal()
-//        mavenCentral()
-//        maven(url="https://jitpack.io")
-//    }
-//
-//    dependencies {
-//        api(kotlin("stdlib-common"))
-//        val antlrKotlinGroupProperty = "com.strumenta.antlr-kotlin"
-//        val antlrKotlinVersion : String by project
-//        api("$antlrKotlinGroupProperty:antlr-kotlin-runtime-jvm:-SNAPSHOT")
-//    }
-//    kotlin.srcDir("build/generated-src/commonAntlr/kotlin")
-//}
-repositories {
-    mavenCentral()
-//    maven{
-//        url = uri("https://jitpack.io")
-//        artifactUrls("com.strumenta/antlr-kotlin")
-//    }
-}
+// you can also use a jitpack version:
+//val antlrKotlinVersion = "86a86f1968"
+
 buildscript {
+    // we have to re-declare this here :-(
+
+    // a small hack: the variable must be named like the property
+    // jitpack will pass -Pversion=..., so `val version` is required here.
     val version: String by project
     // we create an alias here...
     val versionProperty = version
@@ -60,68 +71,16 @@ buildscript {
     val antlrKotlinVersion = versionProperty
     // you can also use a jitpack version (we have to re-declare this here):
     //val antlrKotlinVersion = "86a86f1968"
-    repositories {
-        mavenCentral()
-        maven(url="https://jitpack.io")
-    }
-    //val antlrKotlinGroupProperty = "com.strumenta.antlr-kotlin"
+
     dependencies {
-        //dependencies {
-        //		implementation 'com.github.strumenta:antlr-kotlin:-SNAPSHOT'
-        //	}
-        classpath(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
-//        classpath("com.strumenta.antlr-kotlin:antlr-kotlin-gradle-plugin:-SNAPSHOT")
-//        classpath("com.strumenta.antlr-kotlin:antlr-kotlin-runtime-jvm:0.0.4")
-//        classpath("com.strumenta.antlr-kotlin:antlr-kotlin-runtime-jvm:d4384e4d90")
+        // add the plugin to the classpath
+        classpath("com.strumenta.antlr-kotlin:antlr-kotlin-gradle-plugin:160bc0b70f")
+        //classpath("$groupProperty:antlr-kotlin-gradle-plugin:$antlrKotlinVersion")
     }
-//    val version: String by project
-//    // we create an alias here...
-//    val versionProperty = version
-//    // do the same for group
-//    val group: String by project
-//    val groupProperty = if (group.endsWith(".antlr-kotlin")) {
-//        group
-//    } else {
-//        // just another jitpack hack
-//        "$group.antlr-kotlin"
-//    }
-//
-//    val antlrKotlinVersion = versionProperty
-//    repositories {
-//        maven {
-//            url = uri("https://plugins.gradle.org/m2/")
-//        }
-//    }
-//    dependencies {
-//        classpath ("com.strumenta.antlr-kotlin:antlr-kotlin-gradle-plugin:0.0.7")
-//        //classpath("com.strumenta.antlr-kotlin:com.strumenta.antlr-kotlin.gradle.plugin:0.0.7")
-//
-//    }
-
-    // you can also use a jitpack version (we have to re-declare this here):
-    //val antlrKotlinVersion = "86a86f1968"
-
-//    dependencies {
-//        // add the plugin to the classpath
-//        classpath("$groupProperty:antlr-kotlin-gradle-plugin:$antlrKotlinVersion")
-//    }
 }
 
-    //apply(plugin = "com.strumenta.antlr-kotlin")
-//maven{
-//    url= uri("com.strumenta:antlr-kotlin:Tag")
-//    artifactUrls("com.strumenta:antlr-kotlin:Tag")
-//}
-dependencies {
-    implementation(kotlin("stdlib"))
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
-    //implementation("com.strumenta:antlr-kotlin:86a86f1968")
-    //implementation("com.strumenta:antlr-kotlin:20add4a180")
-    api("org.antlr:antlr4:4.9.3")
-    //api("com.strumenta.antlr-kotlin:antlr-kotlin-runtime-jvm:86a86f1968")
-    antlr("org.antlr.antlr4-runtime:4.9.1")
-
-}
+// in antlr-kotlin-plugin <0.0.5, the configuration was applied by the plugin.
+// starting from verison 0.0.5, you have to apply it manually:
 //tasks.register<com.strumenta.antlrkotlin.gradleplugin.AntlrKotlinTask>("generateKotlinGrammarSource") {
 //    // the classpath used to run antlr code generation
 //    antlrClasspath = configurations.detachedConfiguration(
@@ -131,15 +90,13 @@ dependencies {
 //        // project.dependencies.create("org.antlr:antlr4:$antlrVersion"),
 //
 //        // antlr target, required to create kotlin code
-//        //compile 'com.strumenta.antlr-kotlin:antlr-kotlin-target:0.0.4'
-//        //project.dependencies.create("com.strumenta.antlr-kotlin:antlr-kotlin-target:0.0.4")
-//                //com.strumenta.antlr-kotlin:antlr-kotlin-gradle-plugin:-SNAPSHOT
+//        project.dependencies.create("com.strumenta.antlr-kotlin:antlr-kotlin-target:160bc0b70f")
 //    )
 //    maxHeapSize = "64m"
-//    packageName = "antlr4"
-//    arguments = listOf("-visitor", "-listener")
+//    packageName = "edu.hse"//"com.strumenta.antlrkotlin.examples"
+//    arguments = listOf("-no-visitor", "-no-listener")
 //    source = project.objects
-//        .sourceDirectorySet("antlr4", "antlr4")
+//        .sourceDirectorySet("antlr", "antlr")
 //        .srcDir("src/antlr4").apply {
 //            include("*.g4")
 //        }
@@ -155,7 +112,7 @@ dependencies {
 // you can call the task manually in this case to update the generated sources
 //tasks.getByName("compileKotlin").dependsOn("generateKotlinGrammarSource")
 
-//// you have to add the generated sources to kotlin compiler source directory list
+// you have to add the generated sources to kotlin compiler source directory list
 //configure<SourceSetContainer> {
 //    named("main") {
 //        withConvention(org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet::class) {
@@ -164,28 +121,11 @@ dependencies {
 //        }
 //    }
 //}
-
-//buildscript {
-//    val antlr by configurations.creating
-//    repositories {
-//        mavenCentral()
-//        maven("https://jitpack.io")
-//    }
-//    subprojects {
 //
-//        //val antlr by configurations.creating
-//        dependencies {
-//            //"implementation"(kotlin("stdlib")
-//            //"implementation"("com.strumenta:antlr-kotlin:20add4a180")
-//            //implementation(kotlin("stdlib"))
-//            //implementation("com.strumenta:antlr-kotlin:Tag")
-//            classpath("edu.hse:antlr-kotlin-gradle-plugin:86a86f1968")
-//            antlr("org.antlr.antlr4-runtime:4.9.1")
-//        }
-//    }
-//}
-//////////////////////////////////
-// a small hack: the variable must be named like the property
-// jitpack will pass -Pversion=..., so `val version` is required here.
+//
+//// to allow -x jsIrBrowserTest -x jsLegacyBrowserTest, see .ci.sh
+//tasks.register("jsIrBrowserTest")
+//tasks.register("jsLegacyBrowserTest")
+
 
 
