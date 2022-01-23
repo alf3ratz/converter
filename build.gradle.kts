@@ -106,13 +106,13 @@ buildscript {
 //    // use this settings if you want to add the generated sources to version control
 //    outputDirectory = File("src/main/kotlin-antlr")
 //}
-
-// run generate task before build
-// not required if you add the generated sources to version control
-// you can call the task manually in this case to update the generated sources
+//
+//// run generate task before build
+//// not required if you add the generated sources to version control
+//// you can call the task manually in this case to update the generated sources
 //tasks.getByName("compileKotlin").dependsOn("generateKotlinGrammarSource")
-
-// you have to add the generated sources to kotlin compiler source directory list
+//
+//// you have to add the generated sources to kotlin compiler source directory list
 //configure<SourceSetContainer> {
 //    named("main") {
 //        withConvention(org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet::class) {

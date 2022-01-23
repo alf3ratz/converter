@@ -1,3 +1,0 @@
-C:\Users\User1337\IdeaProjects\converter\src\main\kotlin\hse\CppLangLexer.kt
-C:\Users\User1337\IdeaProjects\converter\src\main\kotlin\hse\CppLangParser.kt
-C:\Users\User1337\IdeaProjects\converter\src\main\kotlin\Main.kt

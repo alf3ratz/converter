@@ -1,6 +1,8 @@
 
-import edu.hse.CppLangLexer
-import org.antlr.v4.kotlinruntime.CharStreams
+import gen.CppLangLexer
+import org.antlr.runtime.ANTLRInputStream
+import org.antlr.v4.runtime.CharStream
+import org.antlr.v4.runtime.CharStreams
 
 
 //import org.antlr.v4.kotlinruntime.CharStreams
@@ -26,10 +28,10 @@ Usage: $program [<options>] <cpp.h files>
 }
 
 fun main(args: Array<String>) {
-    if (args.isEmpty()) {
-        printUsage("converter")
-        return
-    }
+//    if (args.isEmpty()) {
+//        printUsage("converter")
+//        return
+//    }
     val str = "#include <iostream>\n" +
             "\n" +
             "int main(){\n" +
@@ -37,7 +39,10 @@ fun main(args: Array<String>) {
             "    return 0;\n" +
             "}"//lineList.toString();
     val input = CharStreams.fromString(str)
-    val lexer = CppLangLexer(input)//ANTLRInputStream(str)
+   // input = //Char
+    val lexer =  CppLangLexer(input)//ANTLRInputStream(str)
+    //println(lexer.allTokens.size)
+    lexer.allTokens.forEach { println("> $it") }
     //val interpreter = lexer.interpreter
     //val tokens = lexer.allTokens
     //tokens.forEach { println("> $it") }
