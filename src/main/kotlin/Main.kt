@@ -1,5 +1,5 @@
 
-import gen.CppLangLexer
+//import gen.CppLangLexer
 import org.antlr.runtime.ANTLRInputStream
 import org.antlr.v4.runtime.CharStream
 import org.antlr.v4.runtime.CharStreams
