@@ -3,7 +3,6 @@ grammar CppLang;
     edu.hse.converter
 }
 
-
 IntegerLiteral:
 	DecimalLiteral Integersuffix?
 	| OctalLiteral Integersuffix?
@@ -345,7 +344,6 @@ fragment Escapesequence:
 fragment Simpleescapesequence:
 	'\\\''
 	| '\\"'
-	| '\\?'
 	| '\\\\'
 	| '\\a'
 	| '\\b'

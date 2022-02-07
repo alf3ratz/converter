@@ -35,23 +35,13 @@ fun main(args: Array<String>) {
     val str = "#include <iostream>\n" +
             "\n" +
             "int main(){\n" +
+            "    int a = 10;\n"+
             "    std::cout << \"Hello world!\" << std::endl;\n" +
             "    return 0;\n" +
             "}"//lineList.toString();
-    val input = CharStreams.fromString(str)
-   // input = //Char
-    val lexer =  CppLangLexer(input)//ANTLRInputStream(str)
-    //println(lexer.allTokens.size)
-    lexer.allTokens.forEach { println("> $it") }
-    //val interpreter = lexer.interpreter
-    //val tokens = lexer.allTokens
-    //tokens.forEach { println("> $it") }
-    //val parser = CppLangParser(CommonTokenStream(lexer))
+//    val input = CharStreams.fromString(str)
+//    val lexer =  CppLangLexer(input)//ANTLRInputStream(str)
+//    lexer.allTokens.forEach { println("> $it") }
 
-    //val root = parser.
-//    val stream:ANTLRInputStream = ANTLRInputStream(input);
-//    val interpreter = lexer.
-//    val result = interpreter!!.match(input, 0)
 
-    //lineList.forEach { println(">  " + it) }
 }
