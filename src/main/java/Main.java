@@ -19,7 +19,7 @@ public class Main {
 //                "    std::cout << \"Hello world!\" << std::endl;\n" +
 //                "    return 0;\n" +
 //                "}";
-        var str =  Files.readString(Path.of("C:\\Users\\User1337\\IdeaProjects\\converterw\\test.cpp"), StandardCharsets.US_ASCII);
+        var str =  Files.readString(Path.of("C:\\Users\\User1337\\IdeaProjects\\converterw\\testdata\\test.cpp"), StandardCharsets.US_ASCII);
         var lexer = new  CppLangLexer(new ANTLRInputStream(str));
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         CppLangParser parser = new CppLangParser(tokens);

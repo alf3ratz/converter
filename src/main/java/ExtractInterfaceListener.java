@@ -10,7 +10,7 @@ public class ExtractInterfaceListener extends CppLangBaseListener {
 
     public ExtractInterfaceListener(CppLangParser parser) throws IOException {
         this.setParser(parser);
-        this.setWriter(new FileWriter("C:\\Users\\User1337\\IdeaProjects\\converterw\\testKt.kt", false));
+        this.setWriter(new FileWriter("C:\\Users\\User1337\\IdeaProjects\\converterw\\resultdata\\testKt.kt", false));
     }
 
     /**
