@@ -24,10 +24,15 @@ public class Main {
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         CppLangParser parser = new CppLangParser(tokens);
 
-        ParserRuleContext tree = parser.statement();// compilationUnit(); // parse
+        var tree = parser.translationUnit();// compilationUnit(); // parse
+        System.out.println(tree.getChildCount());
+
         ParseTreeWalker walker = new ParseTreeWalker(); // create standard walker
         ExtractInterfaceListener extractor = new ExtractInterfaceListener(parser);
         walker.walk(extractor, tree); // initiate walk of tree with listener
+//
+        var visit = new CppLangBaseVisitor();
+        var result = visit.visit(tree);
 
     }
 }
