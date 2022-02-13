@@ -10,6 +10,7 @@ import org.jetbrains.kotlin.idea.caches.resolve.util.getJavaMethodDescriptor
 import org.jetbrains.kotlin.j2k.ast.Nullability
 import org.jetbrains.kotlin.js.resolve.diagnostics.findPsi
 import org.jetbrains.kotlin.nj2k.*
+import org.jetbrains.kotlin.nj2k.conversions.RecursiveApplicableConversionBase
 import org.jetbrains.kotlin.nj2k.symbols.JKUniverseMethodSymbol
 import org.jetbrains.kotlin.nj2k.tree.JKMethod
 import org.jetbrains.kotlin.nj2k.tree.JKTreeElement
