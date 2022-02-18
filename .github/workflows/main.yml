@@ -14,7 +14,7 @@ on:
     branches: [ master ]
 
 jobs:
-  run:
+  build:
 
     runs-on: ubuntu-latest
 
@@ -39,6 +39,8 @@ jobs:
       run: chmod +x gradlew
     - name: build
       run: ./gradlew build
+    - name: init
+      run: ./gradlew init
     - name: Gen .jar
       run: ./gradlew assemble
     - name: Create Release
