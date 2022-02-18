@@ -21,6 +21,10 @@ jobs:
     steps:
     - name: Ls
       run: ls -la
+    - name: Ls ..
+      run: ls -la ..
+    - name: Ls ../..
+      run: ls -la ../..
     - name: Pwd
       run: pwd
     - name: Gen .jar
