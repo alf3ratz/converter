@@ -27,6 +27,12 @@ jobs:
       run: ls -la ../..
     - name: Pwd
       run: pwd
+    - name: check
+      run: ls
+    - name: cd ..
+      run: cd ..
+    - name: check2
+      run: ls
     - name: 'Setup Java'
       uses: actions/setup-java@v1
       with: 
