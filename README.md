@@ -12,8 +12,8 @@ gradlew.bat jar
 ```
 for Windows
 
-### .exe release:
-ToDo
+### .jar release:
+https://github.com/alf3ratz/converter/releases
 
 # Usage
 Run installed app or command
