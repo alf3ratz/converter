@@ -37,8 +37,8 @@ jobs:
 #       run: gradle init
 #     - name: 'gradle wrapper'
 #       run: gradle wrapper --gradle-version 7.4
-#     - name: 'Add gradlew'
-#       run: chmod +x gradlew
+    - name: 'Add gradlew'
+      run: chmod +x gradlew
     - name: build
       run: ./gradlew build
 #     - name: init
