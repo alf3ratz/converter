@@ -28,7 +28,7 @@ jobs:
     - name: Pwd
       run: pwd
     - name: Gen .jar
-      run: chmod +x ./gradlew jar
+      run: gradle jar
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
