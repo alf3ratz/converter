@@ -14,7 +14,7 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
+  run:
 
     runs-on: ubuntu-latest
 
