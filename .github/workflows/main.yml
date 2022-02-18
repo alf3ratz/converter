@@ -40,7 +40,7 @@ jobs:
     - name: build
       run: ./gradlew build
     - name: Gen .jar
-      run: ./gradlew jar
+      run: ./gradlew assemble
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
