@@ -32,7 +32,7 @@ jobs:
       with: 
         java-version: 11
     - name: 'Add gradlew'
-      run: chmod +x gradlew
+      run: chmod +x ./gradlew
     - name: build
       run: ./gradlew build
     - name: Gen .jar
