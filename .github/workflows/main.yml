@@ -27,16 +27,12 @@ jobs:
       run: ls -la ../..
     - name: Pwd
       run: pwd
-    - name: check
-      run: ls
-    - name: cd ..
-      run: cd ..
-    - name: check2
-      run: ls
     - name: 'Setup Java'
       uses: actions/setup-java@v1
       with: 
         java-version: 11
+    - name: 'gradle init'
+      run: gradle init
     - name: 'gradle wrapper'
       run: gradle wrapper --gradle-version 7.4
     - name: 'Add gradlew'
