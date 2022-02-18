@@ -31,10 +31,12 @@ jobs:
       uses: actions/setup-java@v1
       with: 
         java-version: 11
+    - name: 'Add gradlew'
+      run: chmod +x gradlew
     - name: build
-      run: .\gradlew build
+      run: ./gradlew build
     - name: Gen .jar
-      run: .\gradlew jar
+      run: ./gradlew jar
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
