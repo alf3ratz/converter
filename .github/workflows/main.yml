@@ -19,11 +19,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Ls
+      run: ls -la
+    - name: Pwd
+      run: pwd
     - name: Gen .jar
-      run: |
-        ls -la
-        pwd
-        chmod +x ./gradlew jar
+      run: chmod +x ./gradlew jar
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
