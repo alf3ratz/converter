@@ -6,8 +6,6 @@ plugins {
 application {
     mainClass.set("MainKt")
 }
-val group: String by project //group = "edu.hse"
-//val antlr: FileCollection by configurations.creating
 
 repositories {
     mavenCentral()
