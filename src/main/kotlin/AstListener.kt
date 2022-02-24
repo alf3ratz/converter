@@ -7,7 +7,7 @@ class AstListener(val parser: CppLangParser?) : CppLangBaseListener() {
     private var convertedCode:StringBuilder = StringBuilder()
 
     companion object {
-        const val TODO_STRING = "{\n\t//TODO\n}\n"
+        const val TODO_STRING = "{\n\t// TODO\n}\n"
     }
 
     fun getConvertedCode():String{

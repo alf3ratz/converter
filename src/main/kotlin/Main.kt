@@ -1,6 +1,4 @@
-//import gen.CppLangLexer
-//import org.antlr.v4.runtime.CommonTokenStream
-//import org.antlr.v4.runtime.tree.ParseTreeWalker
+import kotlinx.cli.*
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTreeWalker
 import java.io.FileWriter
@@ -24,28 +22,40 @@ Usage: $program [<options>] <cpp.h files>
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """.trimIndent()
     )
-}
+}//C:\\Users\\User1337\\IdeaProjects\\converterw\\testdata\\test.cpp
+//C:\\Users\\User1337\\IdeaProjects\\converterw\\resultdata\\testKt.kt
 
 fun main(args: Array<String>) {
+    val argsParser = ArgParser("converter")
+    val input by argsParser.option(ArgType.String, shortName = "i", description = "Input file").required()
+    val output by argsParser.option(ArgType.String, shortName = "o", description = "Output file name")
+    var res = argsParser.parse(args)
+    println(res.commandName)
     if (args.isEmpty()) {
         printUsage("converter")
         return
     }
-    val str = Files.readString(
-        Path.of(args[0]),
+    val cppCodeAsString = Files.readString(
+        Path.of(input),
         StandardCharsets.US_ASCII
     )
-    val writer: FileWriter =
-        FileWriter(args[1], false)
-    val lexer = CppLangLexer(org.antlr.v4.runtime.ANTLRInputStream(str))
+    val parser = createParser(cppCodeAsString)
+    writeToFile(output, parser)
+}
+
+
+fun createParser(cppCodeAsString: String): CppLangParser {
+    val lexer = CppLangLexer(org.antlr.v4.runtime.ANTLRInputStream(cppCodeAsString))
     val tokens = CommonTokenStream(lexer)
-    val parser = CppLangParser(tokens)
+    return CppLangParser(tokens)
+}
+
+fun writeToFile(pathToKtFile: String?, parser: CppLangParser) {
+    val writer = FileWriter(pathToKtFile!!, false)
     val tree = parser.translationUnit()
     val walker = ParseTreeWalker()
     val extractor = AstListener(parser)
     walker.walk(extractor, tree)
     writer.write(extractor.getConvertedCode())
     writer.close()
-
-
 }
