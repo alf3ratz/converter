@@ -1,13 +1,12 @@
-
 //import gen.CppLangLexer
-import org.antlr.runtime.ANTLRInputStream
-import org.antlr.v4.runtime.CharStream
-import org.antlr.v4.runtime.CharStreams
-
-
-//import org.antlr.v4.kotlinruntime.CharStreams
-
-
+//import org.antlr.v4.runtime.CommonTokenStream
+//import org.antlr.v4.runtime.tree.ParseTreeWalker
+import org.antlr.v4.runtime.CommonTokenStream
+import org.antlr.v4.runtime.tree.ParseTreeWalker
+import java.io.FileWriter
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.Path
 
 
 private fun printUsage(program: String) {
@@ -28,20 +27,25 @@ Usage: $program [<options>] <cpp.h files>
 }
 
 fun main(args: Array<String>) {
-//    if (args.isEmpty()) {
-//        printUsage("converter")
-//        return
-//    }
-    val str = "#include <iostream>\n" +
-            "\n" +
-            "int main(){\n" +
-            "    int a = 10;\n"+
-            "    std::cout << \"Hello world!\" << std::endl;\n" +
-            "    return 0;\n" +
-            "}"//lineList.toString();
-//    val input = CharStreams.fromString(str)
-//    val lexer =  CppLangLexer(input)//ANTLRInputStream(str)
-//    lexer.allTokens.forEach { println("> $it") }
+    if (args.isEmpty()) {
+        printUsage("converter")
+        return
+    }
+    val str = Files.readString(
+        Path.of(args[0]),
+        StandardCharsets.US_ASCII
+    )
+    val writer: FileWriter =
+        FileWriter(args[1], false)
+    val lexer = CppLangLexer(org.antlr.v4.runtime.ANTLRInputStream(str))
+    val tokens = CommonTokenStream(lexer)
+    val parser = CppLangParser(tokens)
+    val tree = parser.translationUnit()
+    val walker = ParseTreeWalker()
+    val extractor = AstListener(parser)
+    walker.walk(extractor, tree)
+    writer.write(extractor.getConvertedCode())
+    writer.close()
 
 
 }

@@ -1,7 +1,4 @@
 grammar CppLang;
-@package{
-    edu.hse.converter
-}
 
 IntegerLiteral:
 	DecimalLiteral Integersuffix?
