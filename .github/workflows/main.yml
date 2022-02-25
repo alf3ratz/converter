@@ -33,6 +33,8 @@ jobs:
       run: chmod +x gradlew
     - name: build
       run: ./gradlew build
+    - name: test
+      run: ./gradlew test
 #     - name: init
 #       run: ./gradlew init
     - name: Gen .jar
