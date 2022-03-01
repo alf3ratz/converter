@@ -48,3 +48,16 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 tasks.test {
     useJUnitPlatform()
 }
+
+tasks.jar {
+    manifest {
+        attributes["Main-Class"] = "MainKt"
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    dependsOn(configurations.runtimeClasspath)
+    from({
+        configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
+    })
+}
