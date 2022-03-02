@@ -12,6 +12,6 @@ int main() {
     return 0;
 }
 
-double secondMain(){
+double secondMain(int a){
     cout<<"lala\n";
 }

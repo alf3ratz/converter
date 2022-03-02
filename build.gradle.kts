@@ -19,6 +19,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.6.0")
     implementation("org.jetbrains.kotlinx:kotlinx-cli:0.3.4")
     antlr("org.antlr:antlr4:4.9.3")
+    implementation("com.squareup:kotlinpoet:1.10.2")
     //testImplementation(kotlin("test-junit5"))
 }
 

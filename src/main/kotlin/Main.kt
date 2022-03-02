@@ -26,21 +26,22 @@ Usage: $program [<options>] <cpp.h files>
 //C:\\Users\\User1337\\IdeaProjects\\converterw\\resultdata\\testKt.kt
 
 fun main(args: Array<String>) {
-    val argsParser = ArgParser("converter")
-    val input by argsParser.option(ArgType.String, shortName = "i", description = "Input file").required()
-    val output by argsParser.option(ArgType.String, shortName = "o", description = "Output file name")
-    var res = argsParser.parse(args)
-    println(res.commandName)
+    //val argsParser = ArgParser("converter")
+    //val input by argsParser.option(ArgType.String, shortName = "i", description = "Input file").required()
+    //val output by argsParser.option(ArgType.String, shortName = "o", description = "Output file name")
+    //var res = argsParser.parse(args)
+    //println(res.commandName)
     if (args.isEmpty()) {
         printUsage("converter")
         return
     }
     val cppCodeAsString = Files.readString(
-        Path.of(input),
+        Path.of(args[0]),
         StandardCharsets.US_ASCII
     )
     val parser = createParser(cppCodeAsString)
-    writeToFile(output, parser)
+    //writeToFile(args[1], parser)
+    writeToFileWithPoet(args[1], parser)
 }
 
 
@@ -58,4 +59,14 @@ fun writeToFile(pathToKtFile: String?, parser: CppLangParser) {
     walker.walk(extractor, tree)
     writer.write(extractor.getConvertedCode())
     writer.close()
+}
+
+fun writeToFileWithPoet(pathToKtFile: String?, parser: CppLangParser) {
+    val tree = parser.translationUnit()
+    val walker = ParseTreeWalker()
+    val extractor = AstListener(parser)
+    walker.walk(extractor, tree)
+    val file = extractor.getConvertedCodeWithPoet()
+
+    file.writeTo(Path.of(pathToKtFile!!))
 }
