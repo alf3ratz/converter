@@ -1,3 +1,5 @@
+import com.github.ajalt.clikt.core.UsageError
+import com.github.ajalt.clikt.output.TermUi
 import kotlinx.cli.*
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTreeWalker
@@ -5,6 +7,7 @@ import java.io.FileWriter
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.io.path.exists
 
 
 private fun printUsage(program: String) {
@@ -25,12 +28,29 @@ Usage: $program [<options>] <cpp.h files>
 }//C:\\Users\\User1337\\IdeaProjects\\converterw\\testdata\\test.cpp
 //C:\\Users\\User1337\\IdeaProjects\\converterw\\resultdata\\testKt.kt
 
+fun runWithoutArguments(): Pair<String?, String?> {
+    val inputPath = TermUi.prompt("Enter input cpp/h file path: ") {
+        when (Path.of(it).exists()) {
+            true -> it
+            false -> throw UsageError("File should exist!")
+        }
+    }
+    val outputPath = TermUi.prompt("Enter output kotlin file path: ") {
+        when (it.isNotEmpty() && it.isNotBlank()) {
+            true -> it
+            false -> throw UsageError("Path shouldn't be empty!")
+        }
+    }
+    return Pair(inputPath, outputPath)
+}
+
 fun main(args: Array<String>) {
-    //val argsParser = ArgParser("converter")
-    //val input by argsParser.option(ArgType.String, shortName = "i", description = "Input file").required()
-    //val output by argsParser.option(ArgType.String, shortName = "o", description = "Output file name")
-    //var res = argsParser.parse(args)
-    //println(res.commandName)
+    val argsParser = ArgParser("converter")
+    val input by argsParser.option(ArgType.String, shortName = "i", description = "Input file").required()
+    val output by argsParser.option(ArgType.String, shortName = "o", description = "Output file name")
+    var res = argsParser.parse(args)
+    println(res.commandName)
+    runWithoutArguments()
     if (args.isEmpty()) {
         printUsage("converter")
         return
