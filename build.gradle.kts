@@ -29,42 +29,32 @@ dependencies {
 tasks.generateGrammarSource {
     maxHeapSize = "64m"
     arguments = arguments + listOf("-visitor", "-long-messages")
-    //outputDirectory = file("${project.buildDir}/generated-sources/antlr")//file("${projectDir}/src/generated").///main/kotlin
-    outputDirectory = file("${projectDir}/src/main/java")///main/kotlin
+    outputDirectory = file("${projectDir}/src/main/java")
 }
 project.ext{
     antlrDir = file("${project.buildDir}/generated-sources/antlr")
 }
-//sourceSets{
-//    main{
-//        java.plus(antlrDir)
-//    }
-//
-//}
-idea {
-    module {
-        //excludeDirs.minusAssign(file("${project.buildDir}/generated-sources/antlr"))
-        //generatedSourceDirs.add(antlrDir)
-
-        //generatedSourceDirs.plusAssign(file("${projectDir}/src/generated"))
-        //sourceDirs.plusAssign(file("${projectDir}/src/generated"))
-        //sourceDirs.plusAssign(file("${project.buildDir}/generated-sources/antlr"))
-
-    }
-}
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "16"
     }
 }
 tasks.compileKotlin {
     dependsOn(tasks.generateGrammarSource)
 }
-val jar by tasks.getting(Jar::class) {
+
+tasks.register<Jar>("c2k-jar") {
+    //archiveClassifier.set("jar")
     manifest {
         attributes["Main-Class"] = "MainKt"
     }
+    from(sourceSets.main.get().output)
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    dependsOn(configurations.runtimeClasspath)
+    from({
+        configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
+    })
 }
 
 

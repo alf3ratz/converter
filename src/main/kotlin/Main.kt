@@ -28,7 +28,7 @@ Usage: $program [<options>] <cpp.h files>
 }//C:\\Users\\User1337\\IdeaProjects\\converterw\\testdata\\test.cpp
 //C:\\Users\\User1337\\IdeaProjects\\converterw\\resultdata\\testKt.kt
 
-fun runWithoutArguments(): Pair<String?, String?> {
+fun runWithoutArguments(): List<String> {
     val inputPath = TermUi.prompt("Enter input cpp/h file path: ") {
         when (Path.of(it).exists()) {
             true -> it
@@ -41,27 +41,26 @@ fun runWithoutArguments(): Pair<String?, String?> {
             false -> throw UsageError("Path shouldn't be empty!")
         }
     }
-    return Pair(inputPath, outputPath)
+    return listOf(inputPath!!, outputPath!!)
 }
 
+// TODO: првоерить работу на новой машинке
 fun main(args: Array<String>) {
-    val argsParser = ArgParser("converter")
+    val argsParser = ArgParser("c2k")
     val input by argsParser.option(ArgType.String, shortName = "i", description = "Input file").required()
-    val output by argsParser.option(ArgType.String, shortName = "o", description = "Output file name")
-    var res = argsParser.parse(args)
-    println(res.commandName)
-    runWithoutArguments()
-    if (args.isEmpty()) {
-        printUsage("converter")
-        return
+    val output by argsParser.option(ArgType.String, shortName = "o", description = "Output file name").required()
+    argsParser.parse(args)
+    var pathToFiles = listOf(input, output)
+    if(output.toString().isEmpty() && input.toString().isEmpty()){
+        pathToFiles = runWithoutArguments()
     }
     val cppCodeAsString = Files.readString(
-        Path.of(args[0]),
+        Path.of(pathToFiles[0]).toAbsolutePath(), // TODO: решить проблему с абсолютным и относительным путём
         StandardCharsets.US_ASCII
     )
     val parser = createParser(cppCodeAsString)
     //writeToFile(args[1], parser)
-    writeToFileWithPoet(args[1], parser)
+    writeToFileWithPoet(pathToFiles[1], parser)
 }
 
 
