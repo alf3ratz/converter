@@ -46,6 +46,7 @@ fun runWithoutArguments(): List<String> {
 
 // TODO: првоерить работу на новой машинке
 fun main(args: Array<String>) {
+
     val argsParser = ArgParser("c2k")
     val input by argsParser.option(ArgType.String, shortName = "i", description = "Input file").required()
     val output by argsParser.option(ArgType.String, shortName = "o", description = "Output file name").required()
@@ -54,6 +55,7 @@ fun main(args: Array<String>) {
     if(output.toString().isEmpty() && input.toString().isEmpty()){
         pathToFiles = runWithoutArguments()
     }
+
     val cppCodeAsString = Files.readString(
         Path.of(pathToFiles[0]).toAbsolutePath(), // TODO: решить проблему с абсолютным и относительным путём
         StandardCharsets.US_ASCII
