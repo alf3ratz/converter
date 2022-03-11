@@ -1,4 +1,4 @@
 class ClassEntity {
     var name: String = ""
-    var methodsInClass = arrayListOf<MethodEntity>()
+    var methodsInClass = arrayListOf<FunctionEntity>()
 }

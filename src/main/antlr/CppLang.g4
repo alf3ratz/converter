@@ -1,7 +1,7 @@
 grammar CppLang;
 
 IntegerLiteral:
-	DecimalLiteral Integersuffix?
+	DecimalLiteral ?
 	| OctalLiteral Integersuffix?
 	| HexadecimalLiteral Integersuffix?
 	| BinaryLiteral Integersuffix?;

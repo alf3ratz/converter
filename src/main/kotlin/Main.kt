@@ -62,7 +62,9 @@ fun main(args: Array<String>) {
     )
     val parser = createParser(cppCodeAsString)
     //writeToFile(args[1], parser)
-    writeToFileWithPoet(pathToFiles[1], parser)
+    val sourceFileName = pathToFiles[0].substring(pathToFiles[0].lastIndexOf("\\")+1,pathToFiles[0].length).replace(".cpp","")
+
+    writeToFileWithPoet(pathToFiles[1], sourceFileName, parser)
 }
 
 
@@ -76,16 +78,16 @@ fun writeToFile(pathToKtFile: String?, parser: CppLangParser) {
     val writer = FileWriter(pathToKtFile!!, false)
     val tree = parser.translationUnit()
     val walker = ParseTreeWalker()
-    val extractor = AstListener(parser)
+    val extractor = AstListener(parser, "")
     walker.walk(extractor, tree)
     writer.write(extractor.getConvertedCode())
     writer.close()
 }
 
-fun writeToFileWithPoet(pathToKtFile: String?, parser: CppLangParser) {
+fun writeToFileWithPoet(pathToKtFile: String?, sourceFileName: String?, parser: CppLangParser) {
     val tree = parser.translationUnit()
     val walker = ParseTreeWalker()
-    val extractor = AstListener(parser)
+    val extractor = AstListener(parser, sourceFileName!!)
     walker.walk(extractor, tree)
     val file = extractor.getConvertedCodeWithPoet()
 
