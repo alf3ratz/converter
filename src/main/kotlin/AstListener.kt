@@ -24,56 +24,41 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
     }
 
     fun getConvertedCodeWithPoet(): FileSpec {
-        if (returnTypeSpec == null) {
-            returnTypeSpec = currentTypeSpec!!.build()
-            file.addType(
-                returnTypeSpec!!
-            )
-        }
+//        if (returnTypeSpec == null) {
+//            returnTypeSpec = currentTypeSpec!!.build()
+//            file.addType(
+//                returnTypeSpec!!
+//            )
+//        }
         val returnValue = file.build()
-        println()
+        println("записал все в файл")
         return returnValue
     }
 
     fun checkIfMethodInClass(ctx: CppLangParser.FunctionDefinitionContext): Boolean {
-//        println("-----")
-//        println(ctx.parent.javaClass)
-//        println(ctx.parent.parent.javaClass)
-//        println(ctx.parent.parent.parent.javaClass)
-//        println(ctx.parent.parent.parent.getChild(0).getChild(1).javaClass)
-//        println(ctx.parent.parent.parent.getChild(0).getChild(1).text)
-//        println(ctx.parent.parent.parent.getChild(3).text)
-//        println(ctx.parent.parent.parent.getChild(3).parent.javaClass)
-//        println("-----")
         val classHeadName = ctx.parent.parent.parent.getChild(0).getChild(1)
         return classHeadName is CppLangParser.ClassHeadNameContext
 
     }
 
     override fun enterFunctionDefinition(ctx: CppLangParser.FunctionDefinitionContext) {
-        println("~~~~~~~")
-//        println(ctx.childCount) //3
-//        println(ctx.getChild(0).text) // inline void
-//        println(ctx.getChild(1).text) // operator+=(uint32size)
-        //println(ctx.declarator().text)
-        //println(ctx.declSpecifierSeq().text)
         if (ctx.getChild(1).text.contains("operator") && ctx.getChild(0).getChild(1)!=null) {// Обработка операторов
             println("_operator_")
-            println(ctx.getChild(0).text) // inline void
-            println(ctx.getChild(0).getChild(0).text)
-            //println(ctx.getChild(0).getChild(1).text)
-            println(ctx.getChild(1).text) // operator+=(uint32size)
-            println(ctx.getChild(1).childCount)
-            println(ctx.getChild(2).text)
-            println(ctx.declarator().text)
-            println(ctx.declSpecifierSeq().text)
+//            println(ctx.getChild(0).text) // inline void
+//            println(ctx.getChild(0).getChild(0).text)
+//            //println(ctx.getChild(0).getChild(1).text)
+//            println(ctx.getChild(1).text) // operator+=(uint32size)
+//            println(ctx.getChild(1).childCount)
+//            println(ctx.getChild(2).text)
+//            println(ctx.declarator().text)
+//            println(ctx.declSpecifierSeq().text)
             val operatorFunction = FunctionEntity()
             operatorFunction.isFunction = false
             operatorFunction.operatorArguments =
                 ctx.getChild(1).text.substring(ctx.getChild(1).text.indexOfFirst { it == '(' }+1,
                     ctx.getChild(1).text.indexOfFirst { it == ')' })
             val operatorSign = ctx.getChild(1).text.substring(8, ctx.getChild(1).text.indexOfFirst { it == '(' })
-            operatorFunction.operator = when(operatorSign){
+            operatorFunction.funName = when(operatorSign){
                 "+"->"plus"
                 "-"->"minus"
                 "-="->"minusAssign"
@@ -88,14 +73,13 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
 
         } else {
             println("_function_")
-            println(ctx.getChild(0).text)
-            println(ctx.getChild(0).getChild(0).text)
-            //println(ctx.getChild(0).getChild(1).text)
-            println(ctx.getChild(1).text)
-            println(ctx.getChild(1).childCount)
-            println(ctx.getChild(2).text)
-            println(ctx.declarator().text)
-            println(ctx.declSpecifierSeq().text)
+//            println(ctx.getChild(0).text)
+//            println(ctx.getChild(0).getChild(0).text)
+//            println(ctx.getChild(1).text)
+//            println(ctx.getChild(1).childCount)
+//            println(ctx.getChild(2).text)
+//            println(ctx.declarator().text)
+//            println(ctx.declSpecifierSeq().text)
             val returnType = ctx.getChild(0).text.trim { it <= ' ' }.replace("inline","")
             val funName =
                 if (ctx.getChild(1).text[ctx.getChild(1).text.length - 2] == '(') ctx.getChild(1).text else removeMethodParameters(
@@ -111,7 +95,6 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
             println("returnType: $returnType")
 
         }
-        println("~~~~~~~")
         //println(ctx.parent.parent.parent.getChild(0).getChild(1).text) // Получение имени клсаа, в котором находится метод
 
     }
@@ -121,6 +104,7 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
         if (currentClass!!.methodsInClass.size > 0) {
             val function = currentClass!!.methodsInClass.last()
             if(function.isFunction){
+                println("добавил функцию")
                 currentTypeSpec!!.addFunction(
                     FunSpec.builder(function.funName)
                         .addModifiers(
@@ -143,6 +127,7 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
                         .build()
                 )
             }else{ // Если оператор
+                println("добавил оператор")
                 currentTypeSpec!!.addFunction(
                     FunSpec.builder(function.funName)
                         .returns(
@@ -165,37 +150,46 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
 
 
     override fun enterClassName(ctx: CppLangParser.ClassNameContext) {
-        // Проверяем, метод какого класса используется
-        // Если стандартная библиотека, то пропускаем
-        if (!ignoreClassNameList.contains(ctx.getChild(0).text)) { // TODO: проходит проверку, если объект небиблиотечного класса указан как параметр метода/оператора
-            if (currentClass != null) {
-                returnTypeSpec = currentTypeSpec!!.build()
-                file.addType(
-                    returnTypeSpec!!
-                )
-            }
-            currentClass = ClassEntity()
-            val name = ctx.getChild(0).text
-            currentClass!!.name = name
-            currentTypeSpec = TypeSpec.classBuilder(currentClass!!.name)
-
-
-            println("className: " + ctx.getChild(0).text)
-            println(ctx.getChild(0).childCount)
-        }
+//        // Проверяем, метод какого класса используется
+//        // Если стандартная библиотека, то пропускаем
+//        if (!ignoreClassNameList.contains(ctx.getChild(0).text)) { // TODO: проходит проверку, если объект небиблиотечного класса указан как параметр метода/оператора
+//            if (currentClass != null) {
+//                returnTypeSpec = currentTypeSpec!!.build()
+//                file.addType(
+//                    returnTypeSpec!!
+//                )
+//            }
+//            currentClass = ClassEntity()
+//            val name = ctx.getChild(0).text
+//            currentClass!!.name = name
+//            currentTypeSpec = TypeSpec.classBuilder(currentClass!!.name)
+//
+//
+//            println("className: " + ctx.getChild(0).text)
+//            println(ctx.getChild(0).childCount)
+//        }
     }
 
     override fun enterClassSpecifier(ctx: CppLangParser.ClassSpecifierContext) {
-        println("classSpecifier: " + ctx.text)
-        //parseClass(ctx)
-//        println("Head child count: " + ctx.childCount)
-//        println("\tchild 0 text: " + ctx.getChild(0).text)
-//        println("\tchild 1 text: " + ctx.getChild(1).text)
-//        println("\tchild 2 text: " + ctx.getChild(2).text)
-//        println("\t\tchild: " + ctx.getChild(2).getChild(0).text)
-//        //println("\t\tchild: "+ctx.getChild(2).getChild(1) .text) == null
-//        println("\tchild 3 text: " + ctx.getChild(3).text)
-//        println(ctx.getChild(2).toStringTree(this.parser))
+        println("~~~~~~~~ classSpecifier ~~~~~~~~~~")
+        println("header ${ctx.getChild(0).getChild(1).text}")
+        // Проверяем, метод какого класса используется
+        // Если стандартная библиотека, то пропускаем
+        val className = ctx.getChild(0).getChild(1).text
+        if (!ignoreClassNameList.contains(className)) { // TODO: проходит проверку, если объект небиблиотечного класса указан как параметр метода/оператора
+            currentClass = ClassEntity()
+            currentClass!!.name = className
+            currentTypeSpec = TypeSpec.classBuilder(className)
+        }
+    }
+
+    override fun exitClassSpecifier(ctx: CppLangParser.ClassSpecifierContext?) {
+        returnTypeSpec = currentTypeSpec!!.build()
+        file.addType(
+            returnTypeSpec!!
+        )
+        println("добавил класс")
+        println("~~~~~~~~ exit classSpecifier ~~~~~~~~")
     }
 
     override fun enterClassHead(ctx: CppLangParser.ClassHeadContext) {// TODO: ctx.classKey().text
@@ -204,31 +198,31 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
 
     override fun enterConstructorInitializer(ctx: CppLangParser.ConstructorInitializerContext?) {
         super.enterConstructorInitializer(ctx)
-        println("constr Init: ${ctx!!.text}")
-        println("constr Init 0: ${ctx.getChild(0).text}")
-        println("constr Init 1: ${ctx.getChild(1).text}")
+//        println("constr Init: ${ctx!!.text}")
+//        println("constr Init 0: ${ctx.getChild(0).text}")
+//        println("constr Init 1: ${ctx.getChild(1).text}")
     }
 
     override fun enterAccessSpecifier(ctx: CppLangParser.AccessSpecifierContext?) {
         super.enterAccessSpecifier(ctx)
-        println("AccessSpecifier: ${ctx!!.text}")
-        if (ctx.text == "private") {
+        //println("AccessSpecifier: ${ctx!!.text}")
+        if (ctx!!.text == "private") {
             privateAccess = "private"
         }
     }
 
     override fun enterOperatorFunctionId(ctx: CppLangParser.OperatorFunctionIdContext?) {
         super.enterOperatorFunctionId(ctx)
-        println("OperatorFunctionId: ${ctx!!.text}")
-        println("OperatorFunctionId 0: ${ctx.getChild(0).text}")
-        println("OperatorFunctionId 1: ${ctx.getChild(1).text}")
+//        println("OperatorFunctionId: ${ctx!!.text}")
+//        println("OperatorFunctionId 0: ${ctx.getChild(0).text}")
+//        println("OperatorFunctionId 1: ${ctx.getChild(1).text}")
 
     }
 
 
     private fun removeMethodParameters(methodDecl: String): String {
         if (methodDecl.contains("(") and methodDecl.contains(")") and !methodDecl.contains("operator")) {
-            println("method decl: $methodDecl")
+            //println("method decl: $methodDecl")
             val firstBracketIndex: Int = methodDecl.indexOfFirst { it == '(' }
             val secondBracketIndex = methodDecl.indexOfFirst { it == ')' }
             return methodDecl.removeRange(firstBracketIndex + 1, secondBracketIndex)
