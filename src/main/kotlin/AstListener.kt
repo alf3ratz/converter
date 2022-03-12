@@ -1,9 +1,11 @@
 import com.squareup.kotlinpoet.*
 import java.util.Map
 import kotlin.reflect.KClass
+import kotlin.reflect.full.primaryConstructor
+import kotlin.reflect.jvm.internal.impl.load.kotlin.KotlinClassFinder
 
 class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBaseListener() {
-    private val uppercaseMap = Map.of("void", "Unit", "int", "Int", "double", "Double", "float", "Float")
+    private val uppercaseMap = Map.of("void", "Unit", "int", "Int", "double", "Double", "float", "Float","Object","Any")
     private val ignoreClassNameList = listOf("std","uint32")
     private var convertedCode: StringBuilder = StringBuilder()
     val file = FileSpec.builder("", fileName)
@@ -66,7 +68,8 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
                 "!="->"equals"
                 else -> operatorSign
             }
-            operatorFunction.returnType = uppercaseMap.getOrDefault(ctx.getChild(0).getChild(1).text, "Any?")
+            val returnType  = ctx.getChild(0).getChild(1).text
+            operatorFunction.returnType = uppercaseMap.getOrDefault(returnType, returnType)
             operatorFunction.operatorBody = ctx.getChild(2).text
             currentClass!!.methodsInClass.add(operatorFunction)
 
@@ -87,7 +90,7 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
             if (checkIfMethodInClass(ctx)) {
                 val function = FunctionEntity()
                 function.funName = funName.replace("()", "")
-                function.returnType = uppercaseMap.getOrDefault(returnType, "Any")
+                function.returnType = uppercaseMap.getOrDefault(returnType, returnType)//"Any"
                 currentClass!!.methodsInClass.add(function)
             }
             println("fun: $funName")
@@ -128,11 +131,12 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
                 )
             }else{ // Если оператор
                 println("добавил оператор")
-                val stringClass: KClass<String> = function.returnType::class
+                //val cls: Class<*> = Class.forName(function.returnType);
+                //val stringClass: KClass<out String> = cls
                 currentTypeSpec!!.addFunction(
                     FunSpec.builder(function.funName)
                         .addParameter(function.operatorArguments!!,String::class)
-                        .addStatement("//${function.operatorBody!!}", String::class)
+                        .addStatement("\t//returns ${function.returnType}\n//${function.operatorBody!!}", String::class)
                         .returns(
                             when (function.returnType) {
                                 "Int" -> Int::class
@@ -141,7 +145,8 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
                                 "Double" -> Double::class
                                 "Boolean" -> Boolean::class
                                 "Unit" -> Unit::class
-                                else -> stringClass::class;//Any::class  Class<?> cls = Class.forName(className);
+                                "Any" -> Any::class
+                                else -> Any::class//Class.forName("edu.hse.${function.returnType}").kotlin.objectInstance!!::class;//Any::class  Class<?> cls = Class.forName(className);
                             }
                         )
                         .build()
