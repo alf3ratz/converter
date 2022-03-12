@@ -91,5 +91,5 @@ fun writeToFileWithPoet(pathToKtFile: String?, sourceFileName: String?, parser: 
     walker.walk(extractor, tree)
     val file = extractor.getConvertedCodeWithPoet()
 
-    file.writeTo(System.out)//Path.of(pathToKtFile!!)
+    file.writeTo(Path.of(pathToKtFile!!))//Path.of(pathToKtFile!!)
 }

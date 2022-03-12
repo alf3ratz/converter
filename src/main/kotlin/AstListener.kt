@@ -1,8 +1,6 @@
-import com.squareup.kotlinpoet.FileSpec
-import com.squareup.kotlinpoet.FunSpec
-import com.squareup.kotlinpoet.KModifier
-import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.*
 import java.util.Map
+import kotlin.reflect.KClass
 
 class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBaseListener() {
     private val uppercaseMap = Map.of("void", "Unit", "int", "Int", "double", "Double", "float", "Float")
@@ -52,6 +50,7 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
 //            println(ctx.getChild(2).text)
 //            println(ctx.declarator().text)
 //            println(ctx.declSpecifierSeq().text)
+            println(ctx.getChild(1).getChild(0).text)
             val operatorFunction = FunctionEntity()
             operatorFunction.isFunction = false
             operatorFunction.operatorArguments =
@@ -100,6 +99,7 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
     }
 
 
+
     override fun exitFunctionBody(ctx: CppLangParser.FunctionBodyContext?) {
         if (currentClass!!.methodsInClass.size > 0) {
             val function = currentClass!!.methodsInClass.last()
@@ -128,8 +128,11 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
                 )
             }else{ // Если оператор
                 println("добавил оператор")
+                val stringClass: KClass<String> = function.returnType::class
                 currentTypeSpec!!.addFunction(
                     FunSpec.builder(function.funName)
+                        .addParameter(function.operatorArguments!!,String::class)
+                        .addStatement("//${function.operatorBody!!}", String::class)
                         .returns(
                             when (function.returnType) {
                                 "Int" -> Int::class
@@ -138,7 +141,7 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
                                 "Double" -> Double::class
                                 "Boolean" -> Boolean::class
                                 "Unit" -> Unit::class
-                                else -> Any::class
+                                else -> stringClass::class;//Any::class  Class<?> cls = Class.forName(className);
                             }
                         )
                         .build()
