@@ -146,7 +146,12 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
                                 "Boolean" -> Boolean::class
                                 "Unit" -> Unit::class
                                 "Any" -> Any::class
-                                else -> Any::class//Class.forName("edu.hse.${function.returnType}").kotlin.objectInstance!!::class;//Any::class  Class<?> cls = Class.forName(className);
+                                else ->try{
+                                    Class.forName("edu.hse.${function.returnType}").kotlin.objectInstance!!::class
+                                //Class.forName("edu.hse.${function.returnType}").kotlin.objectInstance!!::class;//Any::class  Class<?> cls = Class.forName(className);
+                                }catch(e:RuntimeException){
+                                    createClassWithPoet(function.returnType)
+                                }
                             }
                         )
                         .build()
@@ -155,7 +160,13 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
             privateAccess = null
         }
     }
-
+private fun createClassWithPoet(className:String){
+    val newClass = FileSpec.builder("", className)
+    newClass.addType(
+        TypeSpec.classBuilder(className).build()
+    ).build()
+    newClass.
+}
 
     override fun enterClassName(ctx: CppLangParser.ClassNameContext) {
 //        // Проверяем, метод какого класса используется
