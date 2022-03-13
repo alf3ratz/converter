@@ -1,3 +1,5 @@
+import java.util.Collections.emptyMap
+
 class FunctionEntity {
     var isFunction:Boolean = true
     var funName:String = ""
@@ -6,4 +8,6 @@ class FunctionEntity {
     var operator:String? = ""
     var operatorArguments:String? = ""
     var operatorBody:String? = ""
+
+    var arguments:Map<String,String> = emptyMap()
 }
