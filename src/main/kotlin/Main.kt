@@ -63,7 +63,6 @@ fun main(args: Array<String>) {
     val parser = createParser(cppCodeAsString)
     //writeToFile(args[1], parser)
     val sourceFileName = pathToFiles[0].substring(pathToFiles[0].lastIndexOf("\\")+1,pathToFiles[0].length).replace(".cpp","")
-
     writeToFileWithPoet(pathToFiles[1], sourceFileName, parser)
 }
 
