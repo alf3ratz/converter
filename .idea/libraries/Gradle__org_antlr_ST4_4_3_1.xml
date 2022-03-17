@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="Gradle: org.antlr:ST4:4.3.1">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.antlr/ST4/4.3.1/9c61ac6d17b7f450b4048742c2cc73787972518e/ST4-4.3.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.antlr/ST4/4.3.1/2ef9e27b7b306c7a6aff0d6e14649f7d1b85b5/ST4-4.3.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

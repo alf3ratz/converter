@@ -1,5 +1,14 @@
-import java.io.File
-import java.io.InputStream
+import com.github.ajalt.clikt.core.UsageError
+import com.github.ajalt.clikt.output.TermUi
+import kotlinx.cli.*
+import org.antlr.v4.runtime.CommonTokenStream
+import org.antlr.v4.runtime.tree.ParseTreeWalker
+import java.io.FileWriter
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.Path
+import kotlin.io.path.exists
+
 
 private fun printUsage(program: String) {
     println(
@@ -16,15 +25,70 @@ Usage: $program [<options>] <cpp.h files>
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """.trimIndent()
     )
+}//C:\\Users\\User1337\\IdeaProjects\\converterw\\testdata\\test.cpp
+//C:\\Users\\User1337\\IdeaProjects\\converterw\\resultdata\\testKt.kt
+
+fun runWithoutArguments(): List<String> {
+    val inputPath = TermUi.prompt("Enter input cpp/h file path: ") {
+        when (Path.of(it).exists()) {
+            true -> it
+            false -> throw UsageError("File should exist!")
+        }
+    }
+    val outputPath = TermUi.prompt("Enter output kotlin file path: ") {
+        when (it.isNotEmpty() && it.isNotBlank()) {
+            true -> it
+            false -> throw UsageError("Path shouldn't be empty!")
+        }
+    }
+    return listOf(inputPath!!, outputPath!!)
 }
 
+// TODO: првоерить работу на новой машинке
 fun main(args: Array<String>) {
-    if (args.isEmpty()) {
-        printUsage("converter")
-        return
+
+    val argsParser = ArgParser("c2k")
+    val input by argsParser.option(ArgType.String, shortName = "i", description = "Input file").required()
+    val output by argsParser.option(ArgType.String, shortName = "o", description = "Output file name").required()
+    argsParser.parse(args)
+    var pathToFiles = listOf(input, output)
+    if(output.toString().isEmpty() && input.toString().isEmpty()){
+        pathToFiles = runWithoutArguments()
     }
-    val inputStream: InputStream = File(args[0]).inputStream()
-    val lineList = mutableListOf<String>()
-    inputStream.bufferedReader().forEachLine { lineList.add(it) }
-    lineList.forEach { println(">  " + it) }
+
+    val cppCodeAsString = Files.readString(
+        Path.of(pathToFiles[0]).toAbsolutePath(), // TODO: решить проблему с абсолютным и относительным путём
+        StandardCharsets.US_ASCII
+    )
+    val parser = createParser(cppCodeAsString)
+    //writeToFile(args[1], parser)
+    val sourceFileName = pathToFiles[0].substring(pathToFiles[0].lastIndexOf("\\")+1,pathToFiles[0].length).replace(".cpp","")
+    writeToFileWithPoet(pathToFiles[1], sourceFileName, parser)
+}
+
+
+fun createParser(cppCodeAsString: String): CppLangParser {
+    val lexer = CppLangLexer(org.antlr.v4.runtime.ANTLRInputStream(cppCodeAsString))
+    val tokens = CommonTokenStream(lexer)
+    return CppLangParser(tokens)
+}
+
+fun writeToFile(pathToKtFile: String?, parser: CppLangParser) {
+    val writer = FileWriter(pathToKtFile!!, false)
+    val tree = parser.translationUnit()
+    val walker = ParseTreeWalker()
+    val extractor = AstListener(parser, "")
+    walker.walk(extractor, tree)
+    writer.write(extractor.getConvertedCode())
+    writer.close()
+}
+
+fun writeToFileWithPoet(pathToKtFile: String?, sourceFileName: String?, parser: CppLangParser) {
+    val tree = parser.translationUnit()
+    val walker = ParseTreeWalker()
+    val extractor = AstListener(parser, sourceFileName!!)
+    walker.walk(extractor, tree)
+    val file = extractor.getConvertedCodeWithPoet()
+
+    file.writeTo(Path.of(pathToKtFile!!))//Path.of(pathToKtFile!!)
 }
