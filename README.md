@@ -16,7 +16,11 @@ for Windows
 https://github.com/alf3ratz/converter/releases
 
 # Usage
-Run installed app or command
+Run installed app 
+```
+java -jar [Downloaded release name].jar
+```
+or command
 ```
 ./gradlew run (UNIX)            gradlew.bat run (Windows)
 ```
@@ -25,6 +29,3 @@ Command itself has format
 ```
 c2k [<options>] <output directory> <cpp.h files>
 ```
-
-### Options list:
-ToDo
