@@ -3,6 +3,8 @@ import com.github.ajalt.clikt.output.TermUi
 import kotlinx.cli.*
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTreeWalker
+import java.io.File
+import java.io.FileOutputStream
 import java.io.FileWriter
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -62,7 +64,7 @@ fun main(args: Array<String>) {
     )
     val parser = createParser(cppCodeAsString)
     //writeToFile(args[1], parser)
-    val sourceFileName = pathToFiles[0].substring(pathToFiles[0].lastIndexOf("\\")+1,pathToFiles[0].length).replace(".cpp","")
+    val sourceFileName = Path.of(pathToFiles[0]).fileName.toString().replace(".cpp","")
     writeToFileWithPoet(pathToFiles[1], sourceFileName, parser)
 }
 
@@ -89,6 +91,13 @@ fun writeToFileWithPoet(pathToKtFile: String?, sourceFileName: String?, parser: 
     val extractor = AstListener(parser, sourceFileName!!)
     walker.walk(extractor, tree)
     val file = extractor.getConvertedCodeWithPoet()
-
-    file.writeTo(Path.of(pathToKtFile!!))//Path.of(pathToKtFile!!)
+    val f = File(pathToKtFile+sourceFileName)
+//    var app = StringBuilder(f.toString())
+//    val res = FileOutputStream(f, true).bufferedWriter().use { writer ->
+//        writer.write(file.toString())
+//        writer.flush()
+//        writer.close()
+//    }
+    file.writeTo(Path.of(pathToKtFile!!))
+    println("\n~~~ DONE ~~~")
 }
