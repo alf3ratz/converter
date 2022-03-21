@@ -55,7 +55,7 @@ fun main(args: Array<String>) {
     val output by argsParser.option(ArgType.String, shortName = "o", description = "Output file name").required()
     argsParser.parse(args)
     var pathToFiles = listOf(input, output)
-    if(output.toString().isEmpty() && input.toString().isEmpty()){
+    if(output.isEmpty() && input.isEmpty()){
         pathToFiles = runWithoutArguments()
     }
 
@@ -64,7 +64,6 @@ fun main(args: Array<String>) {
         StandardCharsets.US_ASCII
     )
     val parser = createParser(cppCodeAsString)
-    //writeToFile(args[1], parser)
     var sourceFileName = Path.of(pathToFiles[0]).fileName.toString().replace(".cpp","")
     sourceFileName = makeRightClassName(sourceFileName)
     writeToFileWithPoet(pathToFiles[1], sourceFileName, parser)
@@ -101,6 +100,7 @@ fun writeToFileWithPoet(pathToKtFile: String?, sourceFileName: String?, parser: 
 //        writer.close()
 //    }
     file.writeTo(Path.of(pathToKtFile!!))
+    println(file.toString())
     println("\n~~~ DONE ~~~")
 }
 

@@ -1,2 +1,4 @@
 .gradle/*
-build/
+build/*
+resultdata/*
+.idea/*

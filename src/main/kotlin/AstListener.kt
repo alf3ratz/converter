@@ -17,6 +17,7 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
     var currentClass: ClassEntity? = null
     var currentTypeSpec: TypeSpec.Builder? = null
     var privateAccess: String? = null
+    var currentFunction: FunSpec.Builder? = null
 
     companion object {
         const val TODO_STRING = "{\n\t// TODO\n}\n"
@@ -44,6 +45,16 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
         val classHeadName = ctx.parent.parent.parent.getChild(0).getChild(1)
         return classHeadName is CppLangParser.ClassHeadNameContext
 
+    }
+
+    fun stringToType(str: String) = when (str) {
+        "Int" -> Int::class
+        "String" -> String::class
+        "Float" -> Float::class
+        "Double" -> Double::class
+        "Boolean" -> Boolean::class
+        "Unit" -> Unit::class
+        else -> Any::class
     }
 
     override fun enterFunctionDefinition(ctx: CppLangParser.FunctionDefinitionContext) {
@@ -99,8 +110,11 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
                 function.returnType = returnType//"Any"
                 currentClass!!.methodsInClass.add(function)
             }
-          //  println("fun: $funName")
-          //  println("returnType: $returnType")
+            else {
+                currentFunction = FunSpec.builder(funName.replace("()", "")).returns(stringToType(returnType))
+            }
+            //println("fun: $funName")
+            //println("returnType: $returnType")
 
         }
         //println(ctx.parent.parent.parent.getChild(0).getChild(1).text) // Получение имени клсаа, в котором находится метод
@@ -109,10 +123,10 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
 
 
     override fun exitFunctionBody(ctx: CppLangParser.FunctionBodyContext?) {
-        if (currentClass!!.methodsInClass.size > 0) {
+        if (currentClass != null && currentClass!!.methodsInClass.size > 0) {
             val function = currentClass!!.methodsInClass.last()
             if (function.isFunction) {
-              //  println("добавил функцию")
+                //println("добавил функцию $function")
                 val function =                     FunSpec.builder(function.funName)
 //                        .addModifiers(
 //                            when (privateAccess) {
@@ -120,17 +134,7 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
 //                                else -> KModifier.PUBLIC
 //                            }
 //                        )
-                    .returns(
-                        when (function.returnType) {
-                            "Int" -> Int::class
-                            "String" -> String::class
-                            "Float" -> Float::class
-                            "Double" -> Double::class
-                            "Boolean" -> Boolean::class
-                            "Unit" -> Unit::class
-                            else -> Any::class
-                        }
-                    )
+                    .returns(stringToType(function.returnType))
                     .build()
                 val str = function.toString()
                 currentTypeSpec!!.addFunction(
@@ -177,6 +181,10 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
                 )
             }
             privateAccess = null
+        }
+        else {
+            file.addFunction(currentFunction!!.build())
+            currentFunction = null
         }
     }
 
@@ -237,6 +245,7 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
         file.addType(
             currentTypeSpec!!.build()
         )
+        currentClass = null
        // println("добавил класс")
       //  println("~~~~~~~~ exit classSpecifier ~~~~~~~~")
     }
