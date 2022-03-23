@@ -3,15 +3,32 @@ import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.TypeSpec
 import utils.makeRightClassName
-import java.nio.file.Path
-import java.nio.file.Paths
 import kotlin.reflect.full.primaryConstructor
 
 class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBaseListener() {
     private val uppercaseMap =
-        mapOf(Pair("void", "Unit"), Pair("int", "Int"), Pair("double", "Double"),
-            Pair("float", "Float"), Pair("Object", "Any"), Pair("bool", "Boolean"),
-            Pair("long", "Int"), Pair("int32_t", "Int"), Pair("int64_t", "Long"))
+        mapOf(Pair("void", "Unit"),
+            Pair("int8_t", "Byte"), Pair("int_fast8_t", "Byte"),Pair("int_least8_t", "Byte"),
+            Pair("short", "Short"), Pair("shortint", "Short"), Pair("signedshort", "Short"),
+                Pair("signedshortint", "Short"), Pair("int16_t", "Short"), Pair("int_fast16_t", "Short"),
+                Pair("int_least16_t", "Short"),
+            Pair("int", "Int"), Pair("long", "Int"), Pair("longint", "Int"), Pair("signed", "Int"),
+                Pair("signedint", "Int"), Pair("signedlongint", "Int"), Pair("signedlong", "Int"),
+                Pair("int32_t", "Int"), Pair("int_fast32_t", "Int"),Pair("int_least32_t", "Int"),
+            Pair("longlong", "Long"), Pair("signedlonglong", "Long"), Pair("longlongint", "Long"),
+                Pair("signedlonglongint", "Long"), Pair("int64_t", "Long"), Pair("int_fast64_t", "Long"),
+                Pair("int_least64_t", "Long"),
+            Pair("uint8_t", "UByte"), Pair("uint_fast8_t", "UByte"),Pair("uint_least8_t", "UByte"),
+            Pair("unsignedshort", "UShort"), Pair("usignedshortint", "UShort"), Pair("uint16_t", "UShort"),
+                Pair("uint_fast16_t", "UShort"), Pair("uint_least16_t", "UShort"),
+            Pair("unsigned", "UInt"), Pair("unsignedint", "UInt"), Pair("unsignedlong", "UInt"),
+                Pair("unsignedlongint", "UInt"), Pair("uint32_t", "UInt"), Pair("uint_fast32_t", "UInt"),Pair("uint_least32_t", "UInt"),
+            Pair("unsignedlonglong", "ULong"), Pair("unsignedlonglongint", "ULong"), Pair("uint64_t", "ULong"),
+                Pair("uint_fast64_t", "ULong"),Pair("uint_least64_t", "ULong"),
+            Pair("double", "Double"),
+            Pair("float", "Float"),
+            Pair("Object", "Any"),
+            Pair("bool", "Boolean"))
     private val ignoreClassNameList = listOf("std", "uint32")
     private var convertedCode: StringBuilder = StringBuilder()
     val file = FileSpec.builder("", fileName)
@@ -19,10 +36,6 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
     var currentTypeSpec: TypeSpec.Builder? = null
     var privateAccess: String? = null
     var currentFunction: FunSpec.Builder? = null
-
-    companion object {
-        const val TODO_STRING = "{\n\t// TODO\n}\n"
-    }
 
     fun getConvertedCode(): String {
         return convertedCode.toString()
@@ -39,8 +52,14 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
     }
 
     private fun stringToType(str: String) = when (str) {
+        "Byte" -> Byte::class
+        "Short" -> Short::class
         "Int" -> Int::class
         "Long" -> Long::class
+        "UByte" -> UByte::class
+        "UShort" -> UShort::class
+        "UInt" -> UInt::class
+        "ULong" -> ULong::class
         "String" -> String::class
         "Float" -> Float::class
         "Double" -> Double::class
@@ -52,10 +71,10 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
     private fun parseType(str: String): String = uppercaseMap.getOrDefault(str, makeRightClassName(str))
 
     override fun enterParameterDeclaration(ctx: ParameterDeclarationContext) {
-        val type = parseType(ctx.getChild(0).text)
+        val type = parseType(ctx.getChild(0).text.replace("const", ""))
         val name = ctx.getChild(1).text
         if (currentClass != null && currentClass!!.methodsInClass.size > 0)
-            currentClass!!.methodsInClass.last().arguments += Pair(type, name)
+            currentClass!!.methodsInClass.last().arguments += Pair(name, type)
         else
             currentFunction!!.addParameter(name, stringToType(type))
     }
@@ -109,7 +128,7 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
                 var func = FunSpec.builder(function.funName)
                     .returns(stringToType(function.returnType))
                 function.arguments.forEach {
-                    func = func.addParameter(it.value, stringToType(it.key))
+                    func = func.addParameter(it.key, stringToType(it.value))
                 }
                 currentTypeSpec!!.addFunction(func.build())
             } else {
@@ -133,7 +152,7 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
                             }
                         )
                 function.arguments.forEach {
-                    func = func.addParameter(it.value, stringToType(it.key))
+                    func = func.addParameter(it.key, stringToType(it.value))
                 }
                 currentTypeSpec!!.addFunction(func.build())
             }
@@ -143,25 +162,6 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
             file.addFunction(currentFunction!!.build())
             currentFunction = null
         }
-    }
-
-    private fun createClassWithPoet(className: String) {
-        val newClass = FileSpec.builder("", className)
-        newClass.addType(
-            TypeSpec.classBuilder(className)
-                //.addModifiers(KModifier.DATA)
-                .primaryConstructor(
-                    FunSpec.constructorBuilder()
-                        .build()
-                )
-                .build()
-        )
-        val cls = newClass.build()
-        val path = Paths.get("").toAbsolutePath().toString()
-        cls.writeTo(Path.of("$path\\src\\main\\kotlin"))
-//        var tmp = cls.toString()*
-//        cls.
-//        cls.writeTo(StringBuilder().append(cls.toString()))
     }
 
     override fun enterClassName(ctx: CppLangParser.ClassNameContext) {
@@ -186,8 +186,6 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
     }
 
     override fun enterClassSpecifier(ctx: CppLangParser.ClassSpecifierContext) {
-       // println("~~~~~~~~ classSpecifier ~~~~~~~~~~")
-      //  println("header ${ctx.getChild(0).getChild(1).text}")
         // Проверяем, метод какого класса используется
         // Если стандартная библиотека, то пропускаем
         val className = makeRightClassName(ctx.getChild(0).getChild(1).text)
@@ -206,19 +204,14 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
     }
 
     override fun enterClassHead(ctx: CppLangParser.ClassHeadContext) {// TODO: ctx.classKey().text
-        //println("classHead: "+ )
     }
 
     override fun enterConstructorInitializer(ctx: CppLangParser.ConstructorInitializerContext?) {
         super.enterConstructorInitializer(ctx)
-//        println("constr Init: ${ctx!!.text}")
-//        println("constr Init 0: ${ctx.getChild(0).text}")
-//        println("constr Init 1: ${ctx.getChild(1).text}")
     }
 
     override fun enterAccessSpecifier(ctx: CppLangParser.AccessSpecifierContext?) {
         super.enterAccessSpecifier(ctx)
-        //println("AccessSpecifier: ${ctx!!.text}")
         if (ctx!!.text == "private") {
             privateAccess = "private"
         }
@@ -226,16 +219,11 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
 
     override fun enterOperatorFunctionId(ctx: CppLangParser.OperatorFunctionIdContext?) {
         super.enterOperatorFunctionId(ctx)
-//        println("OperatorFunctionId: ${ctx!!.text}")
-//        println("OperatorFunctionId 0: ${ctx.getChild(0).text}")
-//        println("OperatorFunctionId 1: ${ctx.getChild(1).text}")
-
     }
 
 
     private fun removeMethodParameters(methodDecl: String): String {
         if (methodDecl.contains("(") and methodDecl.contains(")") and !methodDecl.contains("operator")) {
-            //println("method decl: $methodDecl")
             val firstBracketIndex: Int = methodDecl.indexOfFirst { it == '(' }
             val secondBracketIndex = methodDecl.indexOfFirst { it == ')' }
             return methodDecl.removeRange(firstBracketIndex + 1, secondBracketIndex)
