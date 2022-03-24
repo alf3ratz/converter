@@ -1,12 +1,21 @@
-import com.squareup.kotlinpoet.*
+import com.lordcodes.turtle.shellRun
+import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.MemberName
+import com.squareup.kotlinpoet.TypeSpec
+
+import org.jetbrains.kotlin.cli.common.environment.setIdeaIoUseFallback
+import org.jetbrains.kotlin.utils.addToStdlib.safeAs
+import utils.createClassWithPoet
 import utils.makeRightClassName
-import java.nio.file.Path
+import java.io.File
+import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.Map
-import kotlin.reflect.KClass
-import kotlin.reflect.full.createInstance
+import javax.script.ScriptEngineManager
 import kotlin.reflect.full.primaryConstructor
-import kotlin.reflect.jvm.internal.impl.load.kotlin.KotlinClassFinder
+import kotlin.reflect.jvm.internal.impl.load.kotlin.JvmType
+
 
 class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBaseListener() {
     private val uppercaseMap =
@@ -27,17 +36,7 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
     }
 
     fun getConvertedCodeWithPoet(): FileSpec {
-//        if (returnTypeSpec == null) {
-//            returnTypeSpec = currentTypeSpec!!.build()
-//            file.addType(
-//                returnTypeSpec!!
-//            )
-//        }
-        val returnValue = file.build()
-        //val str =
-        //println("записал все в файл")
-
-        return returnValue
+        return file.build()
     }
 
     fun checkIfMethodInClass(ctx: CppLangParser.FunctionDefinitionContext): Boolean {
@@ -53,11 +52,6 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
 //            println(ctx.getChild(0).getChild(0).text)
 //            //println(ctx.getChild(0).getChild(1).text)
 //            println(ctx.getChild(1).text) // operator+=(uint32size)
-//            println(ctx.getChild(1).childCount)
-//            println(ctx.getChild(2).text)
-//            println(ctx.declarator().text)
-//            println(ctx.declSpecifierSeq().text)
-            //println(ctx.getChild(1).getChild(0).text)
             val operatorFunction = FunctionEntity()
             operatorFunction.isFunction = false
             operatorFunction.operatorArguments =
@@ -79,14 +73,7 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
             currentClass!!.methodsInClass.add(operatorFunction)
 
         } else {
-          //  println("_function_")
-//            println(ctx.getChild(0).text)
-//            println(ctx.getChild(0).getChild(0).text)
-//            println(ctx.getChild(1).text)
-//            println(ctx.getChild(1).childCount)
-//            println(ctx.getChild(2).text)
-//            println(ctx.declarator().text)
-//            println(ctx.declSpecifierSeq().text)
+            //  println("_function_")
             val returnTypeInCpp = ctx.getChild(0).text.trim { it <= ' ' }.replace("inline", "")
             val returnType = uppercaseMap.getOrDefault(returnTypeInCpp, makeRightClassName(returnTypeInCpp))
             val funName =
@@ -99,21 +86,51 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
                 function.returnType = returnType//"Any"
                 currentClass!!.methodsInClass.add(function)
             }
-          //  println("fun: $funName")
-          //  println("returnType: $returnType")
+            //  println("fun: $funName")
+            //  println("returnType: $returnType")
 
         }
         //println(ctx.parent.parent.parent.getChild(0).getChild(1).text) // Получение имени клсаа, в котором находится метод
 
     }
 
+    override fun enterSimpleDeclaration(ctx: CppLangParser.SimpleDeclarationContext?) {
+//                println("~~~~ enterSimpleDeclaration ~~~~")// w=w+size; w=w+size; // TODO: распарсить тело метода здесь!!!
+//        println(ctx!!.text)
+//        println(ctx.getChild(0).text)
+//        println("~~~~~~~~")
+    }
+
+    override fun enterParameterDeclaration(ctx: CppLangParser.ParameterDeclarationContext?) {
+        println("~~~~ enterParameterDeclaration ~~~~")
+        println(ctx!!.text)
+        println(ctx.getChild(0).text)
+        println(ctx.getChild(1).text)
+        //println(ctx.parent::class)
+        println("~~~~~~~~")
+    }
+
+
+    override fun enterDeclarationStatement(ctx: CppLangParser.DeclarationStatementContext?) {
+//                println("~~~~ enterDeclarationStatement ~~~~") // w=w+size; w=w+size; // TODO: распарсить тело метода здесь!!!
+//        println(ctx!!.text)
+//        println(ctx.getChild(0).text)
+//        println("~~~~~~~~")
+    }
+
+    override fun enterFunctionBody(ctx: CppLangParser.FunctionBodyContext?) {
+//        println("~~~~fun body ~~~~")
+//        println(ctx!!.text)
+//        println(ctx.getChild(0).text)
+
+    }
 
     override fun exitFunctionBody(ctx: CppLangParser.FunctionBodyContext?) {
         if (currentClass!!.methodsInClass.size > 0) {
             val function = currentClass!!.methodsInClass.last()
             if (function.isFunction) {
-              //  println("добавил функцию")
-                val function =                     FunSpec.builder(function.funName)
+                //  println("добавил функцию")
+                val function = FunSpec.builder(function.funName)
 //                        .addModifiers(
 //                            when (privateAccess) {
 //                                "private" -> KModifier.PRIVATE
@@ -137,7 +154,7 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
                     function
                 )
             } else { // Если оператор
-              //  println("добавил оператор")
+                //  println("добавил оператор")
                 //val cls: Class<*> = Class.forName(function.returnType);
                 //val stringClass: KClass<out String> = cls
                 val contentToString = MemberName("kotlin.collections", "contentToString")
@@ -154,22 +171,19 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
                                 "Boolean" -> Boolean::class
                                 "Unit" -> Unit::class
                                 "Any" -> Any::class
-//                                else->iSize::class
                                 else -> try {
-                                    //println("-~-~-~-~")
-                                    val obj = ClassLoader.getSystemClassLoader().loadClass("${function.returnType}").kotlin.primaryConstructor!!.call()//Class.forName("${function.returnType}").kotlin.primaryConstructor!!.call()
+                                    val obj = ClassLoader.getSystemClassLoader()
+                                        .loadClass("${function.returnType}").kotlin.primaryConstructor!!.call()
                                     obj.javaClass.kotlin
-//                                    val tmp = ClassLoader.getSystemClassLoader().loadClass(function.returnType) //findSystemClass(java.lang.String)
-//                                    val obj = Class.forName("${function.returnType}").kotlin.primaryConstructor!!.call()
-//                                    obj.javaClass.kotlin
-                                    //tmp.javaClass.kotlin.createInstance().kotlin::class
-                                    //Class.forName("edu.hse.${function.returnType}").kotlin.objectInstance!!::class;//Any::class  Class<?> cls = Class.forName(className);
                                 } catch (e: ClassNotFoundException) {
-                                    //println("ababababbaababbbababbaba")
-                                    createClassWithPoet(function.returnType)
-                                    Thread.sleep(1000)
-                                    val obj = ClassLoader.getSystemClassLoader().loadClass("${function.returnType}").kotlin.primaryConstructor!!.call()//Class.forName("${function.returnType}").kotlin.primaryConstructor!!.call()
-                                    obj.javaClass.kotlin
+                                    val classAsString = createClassWithPoet(function.returnType).replace("public","")
+                                    val classLoader = Thread.currentThread().contextClassLoader
+                                    val engineManager = ScriptEngineManager(classLoader)
+                                    setIdeaIoUseFallback()
+                                    val ktsEngine: javax.script.ScriptEngine? = engineManager.getEngineByExtension("kts")
+                                    ktsEngine!!.eval(classAsString)
+                                    val ret = ktsEngine.eval("${function.returnType}()")
+                                    ret::class
                                 }
                             }
                         )
@@ -180,24 +194,7 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
         }
     }
 
-    private fun createClassWithPoet(className: String) {
-        val newClass = FileSpec.builder("", className)
-        newClass.addType(
-            TypeSpec.classBuilder(className)
-                //.addModifiers(KModifier.DATA)
-                .primaryConstructor(
-                    FunSpec.constructorBuilder()
-                        .build()
-                )
-                .build()
-        )
-        val cls = newClass.build()
-        val path = Paths.get("").toAbsolutePath().toString()
-        cls.writeTo(Path.of("$path\\src\\main\\kotlin"))
-//        var tmp = cls.toString()*
-//        cls.
-//        cls.writeTo(StringBuilder().append(cls.toString()))
-    }
+
 
     override fun enterClassName(ctx: CppLangParser.ClassNameContext) {
 //        // Проверяем, метод какого класса используется
@@ -221,8 +218,8 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
     }
 
     override fun enterClassSpecifier(ctx: CppLangParser.ClassSpecifierContext) {
-       // println("~~~~~~~~ classSpecifier ~~~~~~~~~~")
-      //  println("header ${ctx.getChild(0).getChild(1).text}")
+        // println("~~~~~~~~ classSpecifier ~~~~~~~~~~")
+        //  println("header ${ctx.getChild(0).getChild(1).text}")
         // Проверяем, метод какого класса используется
         // Если стандартная библиотека, то пропускаем
         val className = makeRightClassName(ctx.getChild(0).getChild(1).text)
@@ -237,8 +234,8 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
         file.addType(
             currentTypeSpec!!.build()
         )
-       // println("добавил класс")
-      //  println("~~~~~~~~ exit classSpecifier ~~~~~~~~")
+        // println("добавил класс")
+        //  println("~~~~~~~~ exit classSpecifier ~~~~~~~~")
     }
 
     override fun enterClassHead(ctx: CppLangParser.ClassHeadContext) {// TODO: ctx.classKey().text
