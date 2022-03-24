@@ -1,4 +1,5 @@
 import CppLangParser.ParameterDeclarationContext
+import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.TypeSpec
@@ -37,6 +38,8 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
     var privateAccess: String? = null
     var currentFunction: FunSpec.Builder? = null
 
+    class NotFound {}
+
     fun getConvertedCode(): String {
         return convertedCode.toString()
     }
@@ -65,18 +68,26 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
         "Double" -> Double::class
         "Boolean" -> Boolean::class
         "Unit" -> Unit::class
-        else -> Any::class
+        "Any" -> Any::class
+        else -> NotFound::class
     }
 
     private fun parseType(str: String): String = uppercaseMap.getOrDefault(str, makeRightClassName(str))
+
+    private fun createType(type: String): ClassName = ClassName("", type)
 
     override fun enterParameterDeclaration(ctx: ParameterDeclarationContext) {
         val type = parseType(ctx.getChild(0).text.replace("const", ""))
         val name = ctx.getChild(1).text
         if (currentClass != null && currentClass!!.methodsInClass.size > 0)
             currentClass!!.methodsInClass.last().arguments += Pair(name, type)
-        else
-            currentFunction!!.addParameter(name, stringToType(type))
+        else {
+            val typeClass = stringToType(type)
+            if (typeClass == NotFound::class)
+                currentFunction!!.addParameter(name, createType(type))
+            else
+                currentFunction!!.addParameter(name, typeClass)
+        }
     }
 
     override fun exitParameterDeclaration(ctx: ParameterDeclarationContext) {}
@@ -116,7 +127,11 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
                 currentClass!!.methodsInClass.add(function)
             }
             else {
-                currentFunction = FunSpec.builder(funName.replace("()", "")).returns(stringToType(returnType))
+                val typeClass = stringToType(returnType)
+                if (typeClass == NotFound::class)
+                    currentFunction = FunSpec.builder(funName.replace("()", "")).returns(createType(returnType))
+                else
+                    currentFunction = FunSpec.builder(funName.replace("()", "")).returns(typeClass)
             }
         }
     }
@@ -124,38 +139,34 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
     override fun exitFunctionBody(ctx: CppLangParser.FunctionBodyContext?) {
         if (currentClass != null && currentClass!!.methodsInClass.size > 0) {
             val function = currentClass!!.methodsInClass.last()
-            if (function.isFunction) {
-                var func = FunSpec.builder(function.funName)
-                    .returns(stringToType(function.returnType))
-                function.arguments.forEach {
-                    func = func.addParameter(it.key, stringToType(it.value))
+            val type = when (function.returnType) {
+                "Int" -> Int::class
+                "String" -> String::class
+                "Float" -> Float::class
+                "Double" -> Double::class
+                "Boolean" -> Boolean::class
+                "Unit" -> Unit::class
+                "Any" -> Any::class
+                else -> try {
+                    val obj = ClassLoader.getSystemClassLoader().loadClass(function.returnType).kotlin.primaryConstructor!!.call()
+                    obj.javaClass.kotlin
+                } catch (e: ClassNotFoundException) {
+                    NotFound::class
                 }
-                currentTypeSpec!!.addFunction(func.build())
-            } else {
-                var func = FunSpec.builder(function.funName)
-                        //.addStatement("\t//returns ${function.returnType}\n//${function.operatorBody!!}", String::class)
-                        .returns(
-                            when (function.returnType) {
-                                "Int" -> Int::class
-                                "String" -> String::class
-                                "Float" -> Float::class
-                                "Double" -> Double::class
-                                "Boolean" -> Boolean::class
-                                "Unit" -> Unit::class
-                                "Any" -> Any::class
-                                else -> try {
-                                    val obj = ClassLoader.getSystemClassLoader().loadClass(function.returnType).kotlin.primaryConstructor!!.call()
-                                    obj.javaClass.kotlin
-                                } catch (e: ClassNotFoundException) {
-                                    Any::class
-                                }
-                            }
-                        )
-                function.arguments.forEach {
-                    func = func.addParameter(it.key, stringToType(it.value))
-                }
-                currentTypeSpec!!.addFunction(func.build())
             }
+            var func = FunSpec.builder(function.funName)
+            func = if (type == NotFound::class)
+                func.returns(createType(function.returnType))
+            else
+                func.returns(type)
+            function.arguments.forEach {
+                val typeClass = stringToType(it.value)
+                func = if (typeClass == Any::class)
+                    func.addParameter(it.key, createType(it.value))
+                else
+                    func.addParameter(it.key, typeClass)
+            }
+            currentTypeSpec!!.addFunction(func.build())
             privateAccess = null
         }
         else {
