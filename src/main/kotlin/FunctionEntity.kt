@@ -9,5 +9,5 @@ class FunctionEntity {
     var operatorArguments:String? = ""
     var operatorBody:String? = ""
 
-    var arguments:Map<String,String> = emptyMap()
+    var arguments:MutableMap<String,String> = mutableMapOf()
 }

@@ -19,7 +19,8 @@ import kotlin.reflect.jvm.internal.impl.load.kotlin.JvmType
 
 class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBaseListener() {
     private val uppercaseMap =
-        Map.of("void", "Unit", "int", "Int", "double", "Double", "float", "Float", "Object", "Any", "bool", "Boolean")
+        Map.of("void", "Unit", "int", "Int", "double", "Double", "float", "Float", "Object", "Any", "bool", "Boolean","uint32",
+                "Int")
     private val ignoreClassNameList = listOf("std", "uint32")
     private var convertedCode: StringBuilder = StringBuilder()
     val file = FileSpec.builder("", fileName)
@@ -47,7 +48,7 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
 
     override fun enterFunctionDefinition(ctx: CppLangParser.FunctionDefinitionContext) {
         if (ctx.getChild(1).text.contains("operator") && ctx.getChild(0).getChild(1) != null) {// Обработка операторов
-            //println("_operator_")
+            println("_operator_")
 //            println(ctx.getChild(0).text) // inline void
 //            println(ctx.getChild(0).getChild(0).text)
 //            //println(ctx.getChild(0).getChild(1).text)
@@ -102,6 +103,15 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
     }
 
     override fun enterParameterDeclaration(ctx: CppLangParser.ParameterDeclarationContext?) {
+        var argsType = ctx!!.getChild(0).text
+        if(argsType.contains("const")){
+            val first = ctx!!.getChild(0).getChild(0).text
+            argsType = ctx!!.getChild(0).getChild(1).text
+            val er = ""
+        }
+        argsType = uppercaseMap.getOrDefault(argsType, makeRightClassName(argsType))
+        val argName = ctx.getChild(1).text
+        currentClass!!.methodsInClass.last().arguments[argName] = argsType
         println("~~~~ enterParameterDeclaration ~~~~")
         println(ctx!!.text)
         println(ctx.getChild(0).text)
@@ -157,10 +167,21 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
                 //  println("добавил оператор")
                 //val cls: Class<*> = Class.forName(function.returnType);
                 //val stringClass: KClass<out String> = cls
-                val contentToString = MemberName("kotlin.collections", "contentToString")
                 currentTypeSpec!!.addFunction(
                     FunSpec.builder(function.funName)
-                        .addParameter(function.operatorArguments!!, String::class)
+                        .addParameter(
+                            function.arguments.keys.first().replace("&",""),
+                            when (function.arguments[function.arguments.keys.first()]) {
+                                "Int" -> Int::class
+                                "String" -> String::class
+                                "Float" -> Float::class
+                                "Double" -> Double::class
+                                "Boolean" -> Boolean::class
+                                "Unit" -> Unit::class
+                                "Any" -> Any::class
+                                else -> tryToResolveType(function.arguments[function.arguments.keys.first()]!!).kotlin
+                            }
+                        )
                         .addStatement("\t//returns ${function.returnType}\n//${function.operatorBody!!}", String::class)
                         .returns(
                             when (function.returnType) {
@@ -176,11 +197,12 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
                                         .loadClass("${function.returnType}").kotlin.primaryConstructor!!.call()
                                     obj.javaClass.kotlin
                                 } catch (e: ClassNotFoundException) {
-                                    val classAsString = createClassWithPoet(function.returnType).replace("public","")
+                                    val classAsString = createClassWithPoet(function.returnType).replace("public", "")
                                     val classLoader = Thread.currentThread().contextClassLoader
                                     val engineManager = ScriptEngineManager(classLoader)
                                     setIdeaIoUseFallback()
-                                    val ktsEngine: javax.script.ScriptEngine? = engineManager.getEngineByExtension("kts")
+                                    val ktsEngine: javax.script.ScriptEngine? =
+                                        engineManager.getEngineByExtension("kts")
                                     ktsEngine!!.eval(classAsString)
                                     val ret = ktsEngine.eval("${function.returnType}()")
                                     ret::class
@@ -194,7 +216,23 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
         }
     }
 
-
+    private fun tryToResolveType(type:String):Class<*> {
+        try {
+            val obj = ClassLoader.getSystemClassLoader()
+                .loadClass(type).kotlin.primaryConstructor!!.call()
+            return obj.javaClass
+        } catch (e: ClassNotFoundException) {
+            val classAsString = createClassWithPoet(type).replace("public", "")
+            val classLoader = Thread.currentThread().contextClassLoader
+            val engineManager = ScriptEngineManager(classLoader)
+            setIdeaIoUseFallback()
+            val ktsEngine: javax.script.ScriptEngine? =
+                engineManager.getEngineByExtension("kts")
+            ktsEngine!!.eval(classAsString)
+            val ret = ktsEngine.eval("${type}()")
+            return ret.javaClass
+        }
+    }
 
     override fun enterClassName(ctx: CppLangParser.ClassNameContext) {
 //        // Проверяем, метод какого класса используется
