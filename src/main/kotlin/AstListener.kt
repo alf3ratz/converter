@@ -2,7 +2,6 @@ import CppLangParser.*
 import com.squareup.kotlinpoet.*
 import utils.makeRightClassName
 import kotlin.reflect.KClass
-import kotlin.reflect.full.primaryConstructor
 
 class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBaseListener() {
     private val uppercaseMap =
@@ -21,7 +20,8 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
             Pair("unsignedshort", "UShort"), Pair("usignedshortint", "UShort"), Pair("uint16_t", "UShort"),
                 Pair("uint_fast16_t", "UShort"), Pair("uint_least16_t", "UShort"),
             Pair("unsigned", "UInt"), Pair("unsignedint", "UInt"), Pair("unsignedlong", "UInt"),
-                Pair("unsignedlongint", "UInt"), Pair("uint32_t", "UInt"), Pair("uint_fast32_t", "UInt"),Pair("uint_least32_t", "UInt"),
+                Pair("unsignedlongint", "UInt"), Pair("uint32_t", "UInt"), Pair("uint_fast32_t", "UInt"),
+                Pair("uint_least32_t", "UInt"),
             Pair("unsignedlonglong", "ULong"), Pair("unsignedlonglongint", "ULong"), Pair("uint64_t", "ULong"),
                 Pair("uint_fast64_t", "ULong"),Pair("uint_least64_t", "ULong"),
             Pair("double", "Double"),
@@ -35,6 +35,7 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
     private var currentTypeSpec: TypeSpec.Builder? = null
     private var privateAccess: String? = null
     private var currentFunction: FunSpec.Builder? = null
+    private var accessModifier = KModifier.PUBLIC
 
     class NotFound {}
 
@@ -82,27 +83,22 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
     private fun createType(type: String): ClassName = ClassName("", type)
 
     override fun enterParameterDeclaration(ctx: ParameterDeclarationContext) {
-        val type = parseType(ctx.getChild(0).text.replace("const", ""))
-        val name = ctx.getChild(1).text
-        if (currentClass != null && currentClass!!.methodsInClass.size > 0)
-            currentClass!!.methodsInClass.last().arguments += Pair(name, type)
-        else {
-            val typeClass = stringToType(type)
-            currentFunction!!.addParameter(name, typeClass)
+        val type = stringToType(parseType(ctx.getChild(0).text
+            .replace("const", "")))
+        val name = ctx.getChild(1).text.replace("&", "")
+        if (ctx.getChild(0).text.contains("const")) {
+            val constName = "$name\$\$const"
+            currentFunction!!.addParameter(constName, type)
+            currentFunction!!.addStatement("var $name: %T = `$constName`", type)
         }
+        else
+            currentFunction!!.addParameter(name, type)
     }
-
-    override fun exitParameterDeclaration(ctx: ParameterDeclarationContext) {}
 
     override fun enterFunctionDefinition(ctx: FunctionDefinitionContext) {
         if (ctx.getChild(1).text.contains("operator") && ctx.getChild(0) != null) {
-            val operatorFunction = FunctionEntity()
-            operatorFunction.isFunction = false
-            operatorFunction.operatorArguments =
-                ctx.getChild(1).text.substring(ctx.getChild(1).text.indexOfFirst { it == '(' } + 1,
-                    ctx.getChild(1).text.indexOfFirst { it == ')' })
             val operatorSign = ctx.getChild(1).text.substring(8, ctx.getChild(1).text.indexOfFirst { it == '(' })
-            operatorFunction.funName = when (operatorSign) {
+            val name = when (operatorSign) {
                 "+" -> "plus"
                 "-" -> "minus"
                 "-=" -> "minusAssign"
@@ -111,58 +107,33 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
                 "!=" -> "notEquals"
                 else -> operatorSign
             }
+            val operatorFunction = FunSpec.builder(name)
             val returnType = ctx.getChild(0).text.replace("inline", "")
-            operatorFunction.returnType = parseType(returnType)
-            operatorFunction.operatorBody = ctx.getChild(2).text
+            operatorFunction.returns(stringToType(parseType(returnType)))
             currentClass!!.methodsInClass.add(operatorFunction)
+            currentFunction = operatorFunction
         } else {
             val returnTypeInCpp = ctx.getChild(0).text.trim { it <= ' ' }.replace("inline", "")
             val returnType = parseType(returnTypeInCpp)
             val funName =
-                if (ctx.getChild(1).text[ctx.getChild(1).text.length - 2] == '(') ctx.getChild(1).text else removeMethodParameters(
+                if (ctx.getChild(1).text[ctx.getChild(1).text.length - 2] == '(')
                     ctx.getChild(1).text
-                ).replace("()", "")
-            if (checkIfMethodInClass(ctx)) {
-                val function = FunctionEntity()
-                function.funName = funName.replace("()", "")
-                function.returnType = returnType//"Any"
+                else
+                    removeMethodParameters(ctx.getChild(1).text).replace("()", "")
+            currentFunction = if (checkIfMethodInClass(ctx)) {
+                val function = FunSpec.builder(funName.replace("()", ""))
+                function.returns(stringToType(returnType))
                 currentClass!!.methodsInClass.add(function)
-            }
-            else {
-                val typeClass = stringToType(returnType)
-                currentFunction = FunSpec.builder(funName.replace("()", "")).returns(typeClass)
-            }
+                function
+            } else
+                FunSpec.builder(funName.replace("()", "")).returns(stringToType(returnType))
         }
     }
 
     override fun exitFunctionBody(ctx: FunctionBodyContext?) {
         if (currentClass != null && currentClass!!.methodsInClass.size > 0) {
             val function = currentClass!!.methodsInClass.last()
-            val type = when (function.returnType) {
-                "Int" -> Int::class
-                "String" -> String::class
-                "Float" -> Float::class
-                "Double" -> Double::class
-                "Boolean" -> Boolean::class
-                "Unit" -> Unit::class
-                "Any" -> Any::class
-                else -> try {
-                    val obj = ClassLoader.getSystemClassLoader().loadClass(function.returnType).kotlin.primaryConstructor!!.call()
-                    obj.javaClass.kotlin
-                } catch (e: ClassNotFoundException) {
-                    NotFound::class
-                }
-            }
-            var func = FunSpec.builder(function.funName)
-            func = if (type == NotFound::class)
-                func.returns(createType(function.returnType))
-            else
-                func.returns(type)
-            function.arguments.forEach {
-                val typeClass = stringToType(it.value)
-                func = func.addParameter(it.key, typeClass)
-            }
-            currentTypeSpec!!.addFunction(func.build())
+            currentTypeSpec!!.addFunction(function.addModifiers(accessModifier).build())
             privateAccess = null
         }
         else {
@@ -203,14 +174,14 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
         }
     }
 
-    private fun notEqualsCheck(arr: ArrayList<FunctionEntity>): FunctionEntity? {
+    private fun notEqualsCheck(arr: MutableList<FunSpec>): FunSpec? {
         var containsEq = false
-        var notEq: FunctionEntity? = null
+        var notEq: FunSpec? = null
         arr.forEach { func ->
             run {
-                if (func.funName == "equals")
+                if (func.name == "equals")
                     containsEq = true
-                if (func.funName == "notEquals")
+                if (func.name == "notEquals")
                     notEq = func
             }
         }
@@ -220,15 +191,14 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
     }
 
     override fun exitClassSpecifier(ctx: ClassSpecifierContext?) {
-        val notEq = notEqualsCheck(currentClass!!.methodsInClass)
+        accessModifier = KModifier.PUBLIC
+        val notEq = notEqualsCheck(currentTypeSpec!!.funSpecs)
         if (notEq != null) {
             var func = FunSpec.builder("equals").returns(Boolean::class)
-            notEq.arguments.forEach { (s, s2) -> func = func.addParameter(ParameterSpec(s, stringToType(s2))) }
+            notEq.parameters.forEach { func = func.addParameter(ParameterSpec(it.name, it.type)) }
             currentTypeSpec!!.addFunction(func.build())
         }
-        file.addType(
-            currentTypeSpec!!.build()
-        )
+        file.addType(currentTypeSpec!!.build())
         currentClass = null
     }
 
@@ -239,17 +209,18 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
         super.enterConstructorInitializer(ctx)
     }
 
-    override fun enterAccessSpecifier(ctx: AccessSpecifierContext?) {
+    override fun enterAccessSpecifier(ctx: AccessSpecifierContext) {
         super.enterAccessSpecifier(ctx)
-        if (ctx!!.text == "private") {
-            privateAccess = "private"
+        accessModifier = when (ctx.text) {
+            "private" -> KModifier.PRIVATE
+            "public"  -> KModifier.PUBLIC
+            else      -> KModifier.PROTECTED
         }
     }
 
     override fun enterOperatorFunctionId(ctx: OperatorFunctionIdContext?) {
         super.enterOperatorFunctionId(ctx)
     }
-
 
     private fun removeMethodParameters(methodDecl: String): String {
         if (methodDecl.contains("(") and methodDecl.contains(")") and !methodDecl.contains("operator")) {
