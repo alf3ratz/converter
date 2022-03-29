@@ -1,6 +1,7 @@
 import CppLangParser.*
 import com.squareup.kotlinpoet.*
 import utils.makeRightClassName
+import java.util.*
 import kotlin.reflect.KClass
 
 class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBaseListener() {
@@ -36,6 +37,7 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
     private var privateAccess: String? = null
     private var currentFunction: FunSpec.Builder? = null
     private var accessModifier = KModifier.PUBLIC
+    private var code = Stack<String>()
 
     class NotFound {}
 
@@ -82,6 +84,64 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
 
     private fun createType(type: String): ClassName = ClassName("", type)
 
+    override fun enterAssignmentExpression(ctx: AssignmentExpressionContext) {
+        //code.clear()
+    }
+
+    override fun enterLiteral(ctx: LiteralContext) {
+        println("Lit ${ctx.text}")
+        code.add(ctx.text)
+        println(code.joinToString(":"))
+    }
+
+    override fun exitShiftExpression(ctx: ShiftExpressionContext) {
+        if (ctx.childCount == 3) {
+            println("Shift{ " + code.joinToString(":"))
+            val secondArg = code.pop()
+            val firstArg = code.pop()
+            val op = if (ctx.getChild(1).text == ">>") "rightShift" else "leftShift"
+            code.push("$firstArg $op $secondArg")
+            println("Shift} " + code.joinToString(":"))
+        }
+    }
+
+    override fun exitMultiplicativeExpression(ctx: MultiplicativeExpressionContext) {
+        if (ctx.childCount == 3) {
+            println(ctx.text)
+            println("Mul " + code.joinToString(":"))
+            val secondArg = code.pop()
+            val firstArg = code.pop()
+            code.push("$firstArg ${ctx.getChild(1).text} $secondArg")
+        }
+    }
+
+    override fun exitAdditiveExpression(ctx: AdditiveExpressionContext) {
+        if (ctx.childCount == 3) {
+            val secondArg = code.pop()
+            val firstArg = code.pop()
+            code.push("$firstArg ${ctx.getChild(1).text} $secondArg")
+        }
+    }
+
+    override fun exitJumpStatement(ctx: JumpStatementContext) {
+        if (ctx.getChild(0).text == "return")
+            currentFunction!!.addStatement("return ${code.pop()}")
+    }
+
+    override fun exitAssignmentExpression(ctx: AssignmentExpressionContext) {
+        val ctx1 = ctx.parent.parent
+        if (ctx1.childCount == 2 && ctx1.getChild(0).text == "=") {
+            val ctxType = ctx1.parent.parent.parent.parent.getChild(0)
+            val type = stringToType(parseType(ctxType.text.replace("const", "")))
+            val constness = if (ctxType.text.contains("const")) "val" else "var"
+
+            val ctxName = ctx1.parent.parent
+            val name = ctxName.getChild(0).text.replace("*", "")
+
+            currentFunction!!.addStatement("$constness $name: %T = ${code.pop()}", type)
+        }
+    }
+
     override fun enterParameterDeclaration(ctx: ParameterDeclarationContext) {
         val type = stringToType(parseType(ctx.getChild(0).text
             .replace("const", "")))
@@ -105,10 +165,14 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
                 "+=" -> "plusAssign"
                 "==" -> "equals"
                 "!=" -> "notEquals"
+                ">>" -> "rightShift"
+                "<<" -> "leftShift"
                 else -> operatorSign
             }
             val operatorFunction = FunSpec.builder(name)
             val returnType = ctx.getChild(0).text.replace("inline", "")
+            if (name == "rightShift" || name == "leftShift")
+                operatorFunction.addModifiers(KModifier.INFIX)
             operatorFunction.returns(stringToType(parseType(returnType)))
             currentClass!!.methodsInClass.add(operatorFunction)
             currentFunction = operatorFunction
