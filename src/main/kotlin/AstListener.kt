@@ -89,26 +89,20 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
     }
 
     override fun enterLiteral(ctx: LiteralContext) {
-        println("Lit ${ctx.text}")
         code.add(ctx.text)
-        println(code.joinToString(":"))
     }
 
     override fun exitShiftExpression(ctx: ShiftExpressionContext) {
         if (ctx.childCount == 3) {
-            println("Shift{ " + code.joinToString(":"))
             val secondArg = code.pop()
             val firstArg = code.pop()
             val op = if (ctx.getChild(1).text == ">>") "rightShift" else "leftShift"
             code.push("$firstArg $op $secondArg")
-            println("Shift} " + code.joinToString(":"))
         }
     }
 
     override fun exitMultiplicativeExpression(ctx: MultiplicativeExpressionContext) {
         if (ctx.childCount == 3) {
-            println(ctx.text)
-            println("Mul " + code.joinToString(":"))
             val secondArg = code.pop()
             val firstArg = code.pop()
             code.push("$firstArg ${ctx.getChild(1).text} $secondArg")
@@ -140,6 +134,11 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
 
             currentFunction!!.addStatement("$constness $name: %T = ${code.pop()}", type)
         }
+    }
+
+    override fun exitPrimaryExpression(ctx: PrimaryExpressionContext) {
+        if (ctx.childCount == 3)
+            code.push("(${code.pop()})")
     }
 
     override fun enterParameterDeclaration(ctx: ParameterDeclarationContext) {
