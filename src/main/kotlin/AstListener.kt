@@ -1,34 +1,29 @@
 import CppLangParser.*
 import com.squareup.kotlinpoet.*
+import com.lordcodes.turtle.shellRun
+import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.MemberName
+import com.squareup.kotlinpoet.TypeSpec
+
+import org.jetbrains.kotlin.cli.common.environment.setIdeaIoUseFallback
+import org.jetbrains.kotlin.utils.addToStdlib.safeAs
+import utils.createClassWithPoet
 import utils.makeRightClassName
 import java.util.*
 import kotlin.reflect.KClass
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.util.Map
+import javax.script.ScriptEngineManager
+import kotlin.reflect.full.primaryConstructor
+import kotlin.reflect.jvm.internal.impl.load.kotlin.JvmType
+
 
 class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBaseListener() {
     private val uppercaseMap =
-        mutableMapOf(Pair("void", "Unit"),
-            Pair("int8_t", "Byte"), Pair("int_fast8_t", "Byte"),Pair("int_least8_t", "Byte"),
-            Pair("short", "Short"), Pair("shortint", "Short"), Pair("signedshort", "Short"),
-                Pair("signedshortint", "Short"), Pair("int16_t", "Short"), Pair("int_fast16_t", "Short"),
-                Pair("int_least16_t", "Short"),
-            Pair("int", "Int"), Pair("long", "Int"), Pair("longint", "Int"), Pair("signed", "Int"),
-                Pair("signedint", "Int"), Pair("signedlongint", "Int"), Pair("signedlong", "Int"),
-                Pair("int32_t", "Int"), Pair("int_fast32_t", "Int"),Pair("int_least32_t", "Int"),
-            Pair("longlong", "Long"), Pair("signedlonglong", "Long"), Pair("longlongint", "Long"),
-                Pair("signedlonglongint", "Long"), Pair("int64_t", "Long"), Pair("int_fast64_t", "Long"),
-                Pair("int_least64_t", "Long"),
-            Pair("uint8_t", "UByte"), Pair("uint_fast8_t", "UByte"),Pair("uint_least8_t", "UByte"),
-            Pair("unsignedshort", "UShort"), Pair("usignedshortint", "UShort"), Pair("uint16_t", "UShort"),
-                Pair("uint_fast16_t", "UShort"), Pair("uint_least16_t", "UShort"),
-            Pair("unsigned", "UInt"), Pair("unsignedint", "UInt"), Pair("unsignedlong", "UInt"),
-                Pair("unsignedlongint", "UInt"), Pair("uint32_t", "UInt"), Pair("uint_fast32_t", "UInt"),
-                Pair("uint_least32_t", "UInt"),
-            Pair("unsignedlonglong", "ULong"), Pair("unsignedlonglongint", "ULong"), Pair("uint64_t", "ULong"),
-                Pair("uint_fast64_t", "ULong"),Pair("uint_least64_t", "ULong"),
-            Pair("double", "Double"),
-            Pair("float", "Float"),
-            Pair("Object", "Any"),
-            Pair("bool", "Boolean"))
+        Map.of("void", "Unit", "int", "Int", "double", "Double", "float", "Float", "Object", "Any", "bool", "Boolean")
     private val ignoreClassNameList = listOf("std", "uint32")
     private var convertedCode: StringBuilder = StringBuilder()
     val file = FileSpec.builder("", fileName)
@@ -176,6 +171,7 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
             currentClass!!.methodsInClass.add(operatorFunction)
             currentFunction = operatorFunction
         } else {
+            //  println("_function_")
             val returnTypeInCpp = ctx.getChild(0).text.trim { it <= ' ' }.replace("inline", "")
             val returnType = parseType(returnTypeInCpp)
             val funName =
@@ -205,7 +201,7 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
         }
     }
 
-    override fun enterClassName(ctx: ClassNameContext) {
+    override fun enterClassName(ctx: CppLangParser.ClassNameContext) {
 //        // Проверяем, метод какого класса используется
 //        // Если стандартная библиотека, то пропускаем
 //        if (!ignoreClassNameList.contains(ctx.getChild(0).text)) { // TODO: проходит проверку, если объект небиблиотечного класса указан как параметр метода/оператора

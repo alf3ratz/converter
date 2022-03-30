@@ -34,6 +34,14 @@ dependencies {
     implementation("com.squareup:kotlinpoet:1.10.2")
     testImplementation(kotlin("test"))
     antlr("org.antlr:antlr4:4.9.3")
+    implementation("com.squareup:kotlinpoet:1.10.2")
+    //testImplementation(kotlin("test-junit5"))
+    implementation(kotlin("reflect"))
+    implementation(kotlin("script-runtime"))
+    implementation(kotlin("compiler-embeddable"))
+    implementation(kotlin("script-util"))
+    implementation(kotlin("scripting-compiler-embeddable"))
+    implementation("com.lordcodes.turtle:turtle:0.5.0")
 }
 
 tasks.generateGrammarSource {
@@ -68,7 +76,7 @@ tasks.compileKotlin {
     dependsOn(tasks.generateGrammarSource)
 }
 
-tasks.register<Jar>("c2k-jar") {
+tasks.register<Jar>("c2k") {
     //archiveClassifier.set("jar")
     manifest {
         attributes["Main-Class"] = "MainKt"
@@ -78,5 +86,11 @@ tasks.register<Jar>("c2k-jar") {
     dependsOn(configurations.runtimeClasspath)
     from({
         configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
+        //exclude("main/kotlin/preparation/**")
     })
 }
+
+
+
+
+
