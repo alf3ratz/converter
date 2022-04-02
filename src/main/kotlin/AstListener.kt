@@ -12,6 +12,7 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.Map
+import java.util.logging.Level
 import javax.script.ScriptEngineManager
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.internal.impl.load.kotlin.JvmType
@@ -37,6 +38,7 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
     }
 
     fun getConvertedCodeWithPoet(): FileSpec {
+        LOGGER.log(Level.INFO, "Ended conversion");
         return file.build()
     }
 
@@ -46,13 +48,29 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
 
     }
 
+    override fun enterTemplateArgumentList(ctx: CppLangParser.TemplateArgumentListContext?) {
+        println("------- enterTemplateArgumentList-----------")
+        println(ctx!!.text)
+    }
+
+    override fun enterTemplateDeclaration(ctx: CppLangParser.TemplateDeclarationContext?) {
+        println("------- enterTemplateDeclaration-----------")
+        println(ctx!!.text)
+    }
+
+    override fun enterSimpleTemplateId(ctx: CppLangParser.SimpleTemplateIdContext?) {
+        println("------- enterSimpleTemplateId-----------")
+        println(ctx!!.text)
+    }
+
+    override fun enterTemplateName(ctx: CppLangParser.TemplateNameContext?) {
+        println("------- enterTemplateName-----------")
+        println(ctx!!.text)
+    }
+
+
     override fun enterFunctionDefinition(ctx: CppLangParser.FunctionDefinitionContext) {
         if (ctx.getChild(1).text.contains("operator") && ctx.getChild(0).getChild(1) != null) {// Обработка операторов
-            println("_operator_")
-//            println(ctx.getChild(0).text) // inline void
-//            println(ctx.getChild(0).getChild(0).text)
-//            //println(ctx.getChild(0).getChild(1).text)
-//            println(ctx.getChild(1).text) // operator+=(uint32size)
             val operatorFunction = FunctionEntity()
             operatorFunction.isFunction = false
             operatorFunction.operatorArguments =
@@ -74,7 +92,6 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
             currentClass!!.methodsInClass.add(operatorFunction)
 
         } else {
-            //  println("_function_")
             val returnTypeInCpp = ctx.getChild(0).text.trim { it <= ' ' }.replace("inline", "")
             val returnType = uppercaseMap.getOrDefault(returnTypeInCpp, makeRightClassName(returnTypeInCpp))
             val funName =
@@ -87,8 +104,6 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
                 function.returnType = returnType//"Any"
                 currentClass!!.methodsInClass.add(function)
             }
-            //  println("fun: $funName")
-            //  println("returnType: $returnType")
 
         }
         //println(ctx.parent.parent.parent.getChild(0).getChild(1).text) // Получение имени клсаа, в котором находится метод
@@ -96,50 +111,30 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
     }
 
     override fun enterSimpleDeclaration(ctx: CppLangParser.SimpleDeclarationContext?) {
-//                println("~~~~ enterSimpleDeclaration ~~~~")// w=w+size; w=w+size; // TODO: распарсить тело метода здесь!!!
-//        println(ctx!!.text)
-//        println(ctx.getChild(0).text)
-//        println("~~~~~~~~")
+// w=w+size; w=w+size; // TODO: распарсить тело метода здесь!!!
     }
 
     override fun enterParameterDeclaration(ctx: CppLangParser.ParameterDeclarationContext?) {
         var argsType = ctx!!.getChild(0).text
         if(argsType.contains("const")){
-            val first = ctx!!.getChild(0).getChild(0).text
-            argsType = ctx!!.getChild(0).getChild(1).text
-            val er = ""
+            val first = ctx.getChild(0).getChild(0).text
+            argsType = ctx.getChild(0).getChild(1).text
         }
         argsType = uppercaseMap.getOrDefault(argsType, makeRightClassName(argsType))
         val argName = ctx.getChild(1).text
         currentClass!!.methodsInClass.last().arguments[argName] = argsType
-        println("~~~~ enterParameterDeclaration ~~~~")
-        println(ctx!!.text)
-        println(ctx.getChild(0).text)
-        println(ctx.getChild(1).text)
-        //println(ctx.parent::class)
-        println("~~~~~~~~")
     }
 
 
     override fun enterDeclarationStatement(ctx: CppLangParser.DeclarationStatementContext?) {
-//                println("~~~~ enterDeclarationStatement ~~~~") // w=w+size; w=w+size; // TODO: распарсить тело метода здесь!!!
-//        println(ctx!!.text)
-//        println(ctx.getChild(0).text)
-//        println("~~~~~~~~")
+// w=w+size; w=w+size; // TODO: распарсить тело метода здесь!!!
     }
 
-    override fun enterFunctionBody(ctx: CppLangParser.FunctionBodyContext?) {
-//        println("~~~~fun body ~~~~")
-//        println(ctx!!.text)
-//        println(ctx.getChild(0).text)
-
-    }
 
     override fun exitFunctionBody(ctx: CppLangParser.FunctionBodyContext?) {
         if (currentClass!!.methodsInClass.size > 0) {
             val function = currentClass!!.methodsInClass.last()
             if (function.isFunction) {
-                //  println("добавил функцию")
                 val function = FunSpec.builder(function.funName)
 //                        .addModifiers(
 //                            when (privateAccess) {
@@ -164,9 +159,6 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
                     function
                 )
             } else { // Если оператор
-                //  println("добавил оператор")
-                //val cls: Class<*> = Class.forName(function.returnType);
-                //val stringClass: KClass<out String> = cls
                 currentTypeSpec!!.addFunction(
                     FunSpec.builder(function.funName)
                         .addParameter(
@@ -256,8 +248,6 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
     }
 
     override fun enterClassSpecifier(ctx: CppLangParser.ClassSpecifierContext) {
-        // println("~~~~~~~~ classSpecifier ~~~~~~~~~~")
-        //  println("header ${ctx.getChild(0).getChild(1).text}")
         // Проверяем, метод какого класса используется
         // Если стандартная библиотека, то пропускаем
         val className = makeRightClassName(ctx.getChild(0).getChild(1).text)
@@ -272,20 +262,12 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
         file.addType(
             currentTypeSpec!!.build()
         )
-        // println("добавил класс")
-        //  println("~~~~~~~~ exit classSpecifier ~~~~~~~~")
     }
 
     override fun enterClassHead(ctx: CppLangParser.ClassHeadContext) {// TODO: ctx.classKey().text
         //println("classHead: "+ )
     }
 
-    override fun enterConstructorInitializer(ctx: CppLangParser.ConstructorInitializerContext?) {
-        super.enterConstructorInitializer(ctx)
-//        println("constr Init: ${ctx!!.text}")
-//        println("constr Init 0: ${ctx.getChild(0).text}")
-//        println("constr Init 1: ${ctx.getChild(1).text}")
-    }
 
     override fun enterAccessSpecifier(ctx: CppLangParser.AccessSpecifierContext?) {
         super.enterAccessSpecifier(ctx)
@@ -295,18 +277,10 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
         }
     }
 
-    override fun enterOperatorFunctionId(ctx: CppLangParser.OperatorFunctionIdContext?) {
-        super.enterOperatorFunctionId(ctx)
-//        println("OperatorFunctionId: ${ctx!!.text}")
-//        println("OperatorFunctionId 0: ${ctx.getChild(0).text}")
-//        println("OperatorFunctionId 1: ${ctx.getChild(1).text}")
-
-    }
 
 
     private fun removeMethodParameters(methodDecl: String): String {
         if (methodDecl.contains("(") and methodDecl.contains(")") and !methodDecl.contains("operator")) {
-            //println("method decl: $methodDecl")
             val firstBracketIndex: Int = methodDecl.indexOfFirst { it == '(' }
             val secondBracketIndex = methodDecl.indexOfFirst { it == ')' }
             return methodDecl.removeRange(firstBracketIndex + 1, secondBracketIndex)

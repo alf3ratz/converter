@@ -5,13 +5,15 @@ import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTreeWalker
 import utils.makeRightClassName
 import java.io.File
-import java.io.FileOutputStream
 import java.io.FileWriter
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.logging.Level
+import java.util.logging.Logger
 import kotlin.io.path.exists
 
+val LOGGER: Logger = LoggingUtils.LOGGER//Logger.getLogger(AstListener::class.java.name)
 
 private fun printUsage(program: String) {
     println(
@@ -48,26 +50,48 @@ fun runWithoutArguments(): List<String> {
 }
 
 // TODO: првоерить работу на новой машинке
+// TODO: проверить работу при передачи пути до папки, в которой есть папки
+// TODO: Написать логирование
+// TODO: Сделать декомпоз
+// TODO: Сделать запуск двух джарников
+// TODO:
 fun main(args: Array<String>) {
-
+    LOGGER.log(Level.INFO, "Getting arguments");
     val argsParser = ArgParser("c2k")
     val input by argsParser.option(ArgType.String, shortName = "i", description = "Input file").required()
     val output by argsParser.option(ArgType.String, shortName = "o", description = "Output file name").required()
+    val isDirectory by argsParser.option(ArgType.Boolean, shortName = "d", description = "Is input path a directory?")
+        .default(false)
     argsParser.parse(args)
     var pathToFiles = listOf(input, output)
-    if(output.toString().isEmpty() && input.toString().isEmpty()){
+    if (output.toString().isEmpty() && input.toString().isEmpty()) {
         pathToFiles = runWithoutArguments()
     }
 
-    val cppCodeAsString = Files.readString(
-        Path.of(pathToFiles[0]).toAbsolutePath(), // TODO: решить проблему с абсолютным и относительным путём
-        StandardCharsets.US_ASCII
-    )
-    val parser = createParser(cppCodeAsString)
-    //writeToFile(args[1], parser)
-    var sourceFileName = Path.of(pathToFiles[0]).fileName.toString().replace(".cpp","")
-    sourceFileName = makeRightClassName(sourceFileName)
-    writeToFileWithPoet(pathToFiles[1], sourceFileName, parser)
+    if (isDirectory) {
+        val dir = File(pathToFiles[0])
+        for (file in dir.listFiles()) {
+            val cppCodeAsString = Files.readString(
+                Path.of(file.absolutePath).toAbsolutePath(),
+                StandardCharsets.US_ASCII
+            )
+            val parser = createParser(cppCodeAsString)
+            var sourceFileName = Path.of(pathToFiles[0]).fileName.toString().replace(".cpp", "")
+            sourceFileName = makeRightClassName(sourceFileName)
+            writeToFileWithPoet(pathToFiles[1], sourceFileName, parser)
+        }
+    } else {
+        val cppCodeAsString = Files.readString(
+            Path.of(pathToFiles[0]).toAbsolutePath(), // TODO: решить проблему с абсолютным и относительным путём
+            StandardCharsets.US_ASCII
+        )
+        val parser = createParser(cppCodeAsString)
+        //writeToFile(args[1], parser)
+        var sourceFileName = Path.of(pathToFiles[0]).fileName.toString().replace(".cpp", "")
+        sourceFileName = makeRightClassName(sourceFileName)
+        LOGGER.log(Level.INFO, "Starting conversion");
+        writeToFileWithPoet(pathToFiles[1], sourceFileName, parser)
+    }
 }
 
 
@@ -93,7 +117,7 @@ fun writeToFileWithPoet(pathToKtFile: String?, sourceFileName: String?, parser: 
     val extractor = AstListener(parser, sourceFileName!!)
     walker.walk(extractor, tree)
     val file = extractor.getConvertedCodeWithPoet()
-    val f = File(pathToKtFile+sourceFileName)
+    val f = File(pathToKtFile + sourceFileName)
 //    var app = StringBuilder(f.toString())
 //    val res = FileOutputStream(f, true).bufferedWriter().use { writer ->
 //        writer.write(file.toString())
