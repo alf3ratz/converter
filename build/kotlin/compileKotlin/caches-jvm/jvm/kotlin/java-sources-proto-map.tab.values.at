@@ -1,0 +1,746 @@
+claratorContext
+enterLambdaExpression
+LambdaExpressionContext
+enterLambdaIntroducer
+LambdaIntroducerContext
+enterLinkageSpecification
+LinkageSpecificationContext
+enterLiteral
+LiteralContext
+enterLiteralOperatorId
+LiteralOperatorIdContext
+enterLogicalAndExpression
+LogicalAndExpressionContext
+enterLogicalOrExpression
+LogicalOrExpressionContext
+enterMemInitializer
+MemInitializerContext
+enterMemInitializerList
+MemInitializerListContext
+enterMemberDeclarator
+MemberDeclaratorContext
+enterMemberDeclaratorList
+MemberDeclaratorListContext
+enterMemberSpecification
+MemberSpecificationContext
+enterMemberdeclaration
+MemberdeclarationContext
+enterMeminitializerid
+MeminitializeridContext
+enterMultiplicativeExpression
+MultiplicativeExpressionContext
+enterNamespaceAlias
+NamespaceAliasContext
+enterNamespaceAliasDefinition
+NamespaceAliasDefinitionContext
+enterNamespaceDefinition
+NamespaceDefinitionContext
+enterNamespaceName
+NamespaceNameContext
+enterNestedNameSpecifier
+NestedNameSpecifierContext
+enterNewDeclarator
+NewDeclaratorContext
+enterNewExpression
+NewExpressionContext
+enterNewInitializer
+NewInitializerContext
+enterNewPlacement
+NewPlacementContext
+enterNewTypeId
+NewTypeIdContext
+enterNoExceptExpression
+NoExceptExpressionContext
+ enterNoPointerAbstractDeclarator
+"NoPointerAbstractDeclaratorContext
+$enterNoPointerAbstractPackDeclarator
+&NoPointerAbstractPackDeclaratorContext
+enterNoPointerDeclarator
+NoPointerDeclaratorContext
+enterNoPointerNewDeclarator
+NoPointerNewDeclaratorContext
+enterNoeExceptSpecification
+NoeExceptSpecificationContext
+enterOpaqueEnumDeclaration
+OpaqueEnumDeclarationContext
+enterOperatorFunctionId
+OperatorFunctionIdContext
+enterOriginalNamespaceName
+OriginalNamespaceNameContext
+enterParameterDeclaration
+ParameterDeclarationContext
+enterParameterDeclarationClause
+!ParameterDeclarationClauseContext
+enterParameterDeclarationList
+ParameterDeclarationListContext
+enterParametersAndQualifiers
+ParametersAndQualifiersContext
+enterPointerAbstractDeclarator
+ PointerAbstractDeclaratorContext
+enterPointerDeclarator
+PointerDeclaratorContext
+enterPointerMemberExpression
+PointerMemberExpressionContext
+enterPointerOperator
+PointerOperatorContext
+enterPostfixExpression
+PostfixExpressionContext
+enterPrimaryExpression
+PrimaryExpressionContext
+enterPseudoDestructorName
+PseudoDestructorNameContext
+enterPureSpecifier
+PureSpecifierContext
+enterQualifiedId
+QualifiedIdContext
+ enterQualifiednamespacespecifier
+"QualifiednamespacespecifierContext
+enterRefqualifier
+RefqualifierContext
+enterRelationalExpression
+RelationalExpressionContext
+enterSelectionStatement
+SelectionStatementContext
+enterShiftExpression
+ShiftExpressionContext
+enterShiftOperator
+ShiftOperatorContext
+enterSimpleCapture
+SimpleCaptureContext
+enterSimpleDeclaration
+SimpleDeclarationContext
+enterSimpleTemplateId
+SimpleTemplateIdContext
+enterSimpleTypeLengthModifier
+SimpleTypeLengthModifierContext
+!enterSimpleTypeSignednessModifier
+#SimpleTypeSignednessModifierContext
+enterSimpleTypeSpecifier
+SimpleTypeSpecifierContext
+enterStatement
+StatementContext
+enterStatementSeq
+StatementSeqContext
+enterStaticAssertDeclaration
+StaticAssertDeclarationContext
+enterStorageClassSpecifier
+StorageClassSpecifierContext
+enterTemplateArgument
+TemplateArgumentContext
+enterTemplateArgumentList
+TemplateArgumentListContext
+enterTemplateDeclaration
+TemplateDeclarationContext
+enterTemplateId
+TemplateIdContext
+enterTemplateName
+TemplateNameContext
+enterTemplateParameter
+TemplateParameterContext
+enterTemplateparameterList
+TemplateparameterListContext
+enterTheOperator
+TheOperatorContext
+enterTheTypeId
+TheTypeIdContext
+enterTheTypeName
+TheTypeNameContext
+enterThrowExpression
+ThrowExpressionContext
+enterTrailingReturnType
+TrailingReturnTypeContext
+enterTrailingTypeSpecifier
+TrailingTypeSpecifierContext
+enterTrailingTypeSpecifierSeq
+TrailingTypeSpecifierSeqContext
+enterTranslationUnit
+TranslationUnitContext
+enterTryBlock
+TryBlockContext
+enterTypeIdList
+TypeIdListContext
+enterTypeIdOfTheTypeId
+TypeIdOfTheTypeIdContext
+enterTypeNameSpecifier
+TypeNameSpecifierContext
+enterTypeParameter
+TypeParameterContext
+enterTypeSpecifier
+TypeSpecifierContext
+enterTypeSpecifierSeq
+TypeSpecifierSeqContext
+enterTypedefName
+TypedefNameContext
+enterUnaryExpression
+UnaryExpressionContext
+enterUnaryOperator
+UnaryOperatorContext
+enterUnqualifiedId
+UnqualifiedIdContext
+enterUsingDeclaration
+UsingDeclarationContext
+enterUsingDirective
+UsingDirectiveContext
+enterVirtualSpecifier
+VirtualSpecifierContext
+enterVirtualSpecifierSeq
+VirtualSpecifierSeqContext
+exitAbstractDeclarator
+exitAbstractPackDeclarator
+exitAccessSpecifier
+exitAdditiveExpression
+exitAliasDeclaration
+exitAlignmentspecifier
+exitAndExpression
+exitAsmDefinition
+exitAssignmentExpression
+exitAssignmentOperator
+exitAttribute
+exitAttributeArgumentClause
+exitAttributeDeclaration
+exitAttributeList
+exitAttributeNamespace
+exitAttributeSpecifier
+exitAttributeSpecifierSeq
+exitBalancedTokenSeq
+exitBalancedtoken
+exitBaseClause
+exitBaseSpecifier
+exitBaseSpecifierList
+exitBaseTypeSpecifier
+exitBlockDeclaration
+exitBraceOrEqualInitializer
+exitBracedInitList
+exitCapture
+exitCaptureDefault
+exitCaptureList
+exitCastExpression
+exitClassHead
+exitClassHeadName
+exitClassKey
+exitClassName
+exitClassOrDeclType
+exitClassSpecifier
+exitClassVirtSpecifier
+exitCompoundStatement
+exitCondition
+exitConditionalExpression
+exitConstantExpression
+exitConstructorInitializer
+exitConversionDeclarator
+exitConversionFunctionId
+exitConversionTypeId
+exitCvQualifier
+exitCvqualifierseq
+exitDeclSpecifier
+exitDeclSpecifierSeq
+exitDeclaration
+exitDeclarationStatement
+exitDeclarationseq
+exitDeclarator
+exitDeclaratorid
+exitDecltypeSpecifier
+exitDeleteExpression
+!exitDynamicExceptionSpecification
+exitElaboratedTypeSpecifier
+exitEmptyDeclaration
+exitEnumHead
+exitEnumName
+exitEnumSpecifier
+exitEnumbase
+exitEnumerator
+exitEnumeratorDefinition
+exitEnumeratorList
+exitEnumkey
+exitEqualityExpression
+exitExceptionDeclaration
+exitExceptionSpecification
+exitExclusiveOrExpression
+exitExplicitInstantiation
+exitExplicitSpecialization
+exitExpression
+exitExpressionList
+exitExpressionStatement
+exitForInitStatement
+exitForRangeDeclaration
+exitForRangeInitializer
+exitFunctionBody
+exitFunctionDefinition
+exitFunctionSpecifier
+exitFunctionTryBlock
+exitHandler
+exitHandlerSeq
+exitIdExpression
+exitInclusiveOrExpression
+exitInitDeclarator
+exitInitDeclaratorList
+exitInitcapture
+exitInitializer
+exitInitializerClause
+exitInitializerList
+exitIterationStatement
+exitJumpStatement
+exitLabeledStatement
+exitLambdaCapture
+exitLambdaDeclarator
+exitLambdaExpression
+exitLambdaIntroducer
+exitLinkageSpecification
+exitLiteral
+exitLiteralOperatorId
+exitLogicalAndExpression
+exitLogicalOrExpression
+exitMemInitializer
+exitMemInitializerList
+exitMemberDeclarator
+exitMemberDeclaratorList
+exitMemberSpecification
+exitMemberdeclaration
+exitMeminitializerid
+exitMultiplicativeExpression
+exitNamespaceAlias
+exitNamespaceAliasDefinition
+exitNamespaceDefinition
+exitNamespaceName
+exitNestedNameSpecifier
+exitNewDeclarator
+exitNewExpression
+exitNewInitializer
+exitNewPlacement
+exitNewTypeId
+exitNoExceptExpression
+exitNoPointerAbstractDeclarator
+#exitNoPointerAbstractPackDeclarator
+exitNoPointerDeclarator
+exitNoPointerNewDeclarator
+exitNoeExceptSpecification
+exitOpaqueEnumDeclaration
+exitOperatorFunctionId
+exitOriginalNamespaceName
+exitParameterDeclaration
+exitParameterDeclarationClause
+exitParameterDeclarationList
+exitParametersAndQualifiers
+exitPointerAbstractDeclarator
+exitPointerDeclarator
+exitPointerMemberExpression
+exitPointerOperator
+exitPostfixExpression
+exitPrimaryExpression
+exitPseudoDestructorName
+exitPureSpecifier
+exitQualifiedId
+exitQualifiednamespacespecifier
+exitRefqualifier
+exitRelationalExpression
+exitSelectionStatement
+exitShiftExpression
+exitShiftOperator
+exitSimpleCapture
+exitSimpleDeclaration
+exitSimpleTemplateId
+exitSimpleTypeLengthModifier
+ exitSimpleTypeSignednessModifier
+exitSimpleTypeSpecifier
+exitStatement
+exitStatementSeq
+exitStaticAssertDeclaration
+exitStorageClassSpecifier
+exitTemplateArgument
+exitTemplateArgumentList
+exitTemplateDeclaration
+exitTemplateId
+exitTemplateName
+exitTemplateParameter
+exitTemplateparameterList
+exitTheOperator
+exitTheTypeId
+exitTheTypeName
+exitThrowExpression
+exitTrailingReturnType
+exitTrailingTypeSpecifier
+exitTrailingTypeSpecifierSeq
+exitTranslationUnit
+exitTryBlock
+exitTypeIdList
+exitTypeIdOfTheTypeId
+exitTypeNameSpecifier
+exitTypeParameter
+exitTypeSpecifier
+exitTypeSpecifierSeq
+exitTypedefName
+exitUnaryExpression
+exitUnaryOperator
+exitUnqualifiedId
+exitUsingDeclaration
+exitUsingDirective
+exitVirtualSpecifier
+exitVirtualSpecifierSeq  œ
+ˇˇˇˇˇˇˇˇˇ  
+
+
+
+
+
+ 
+
+	 
+ˇˇˇˇˇˇˇˇˇ 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	  
+	" 
+	$ 
+	& 
+	( 
+	* 
+	, 
+	. 
+	0 
+	2 
+	4 
+	6 
+	8 
+	: 
+	< 
+	> 
+	@ 
+	B 
+	D 
+	F 
+	H 
+	J 
+	L 
+	N 
+	P 
+	R 
+	T 
+	V 
+	X 
+	Z 
+	\ 
+	^ 
+	` 
+	b 
+	d 
+	f 
+	h 
+	j 
+	l 
+	n 
+	p 
+	r 
+	t 
+	v 
+	x 
+	z 
+	| 
+	~ 
+	Ä 
+	Ç 
+	Ñ 
+	Ü 
+	à 
+	ä 
+	å 
+	é 
+	ê 
+	í 
+	î 
+	ñ 
+	ò 
+	ö 
+	ú 
+	û 
+	† 
+	¢ 
+	§ 
+	¶ 
+	® 
+	™ 
+	¨ 
+	Æ 
+	∞ 
+	≤ 
+	¥ 
+	∂ 
+	∏ 
+	∫ 
+	º 
+	æ 
+	¿ 
+	¬ 
+	ƒ 
+	∆ 
+	» 
+	  
+	Ã 
+	Œ 
+	– 
+	“ 
+	‘ 
+	÷ 
+	ÿ 
+	⁄ 
+	‹ 
+	ﬁ 
+	‡ 
+	‚ 
+	‰ 
+	Ê 
+	Ë 
+	Í 
+	Ï 
+	Ó 
+	 
+	Ú 
+	Ù 
+	ˆ 
+	¯ 
+	˙ 
+	¸ 
+	˛ 
+	Ä 
+	Ç 
+	Ñ 
+	Ü 
+	à 
+	ä 
+	å 
+	é 
+	ê 
+	í 
+	î 
+	ñ 
+	ò 
+	ö 
+	ú 
+	û 
+	† 
+	¢ 
+	§ 
+	¶ 
+	® 
+	™ 
+	¨ 
+	Æ 
+	∞ 
+	≤ 
+	¥ 
+	∂ 
+	∏ 
+	∫ 
+	º 
+	æ 
+	¿ 
+	¬ 
+	ƒ 
+	∆ 
+	» 
+	  
+	Ã 
+	Œ 
+	– 
+	“ 
+	‘ 
+	÷ 
+	ÿ 
+	⁄ 
+	‹ 
+	ﬁ 
+	‡ 
+	‚ 
+	‰ 
+	Ê 
+	Ë 
+	Í 
+	Ï 
+	Ó 
+	 
+	Ú 
+	Ù 
+	ˆ 
+	¯ 
+	˙ 
+	¸ 
+	˛ 
+	Ä 
+	Ç 
+	Ñ 
+	Ü 
+	à „   20B6*000J*0
+0
+HñÄJ*00HñÄJJ*HH" **002($*HH**HH00HñÄJ*00HñÄJ*00HñÄJ*00HñÄJ02*00HñÄJ02*00HñÄJ
+ 0HñÄJ!*00HñÄ  ‰
+CppLangParser
+ParameterDeclarationContext
+org
+antlr
+v4
+runtime
+ParserRuleContext
+parent
+invokingState
+kotlin
+Int
+Assign
+tree
+TerminalNode
+abstractDeclarator
+AbstractDeclaratorContext
+accept
+T
+Any
+visitor
+ParseTreeVisitor
+attributeSpecifierSeq
+AttributeSpecifierSeqContext
+declSpecifierSeq
+DeclSpecifierSeqContext
+
+declarator
+DeclaratorContext
+	enterRule
+Unit
+listener
+ParseTreeListener
+exitRule
+getRuleIndex
+initializerClause
+InitializerClauseContext   ô
+ˇˇˇˇˇˇˇˇˇ  
+  
+
+
+
+
+ 
+	
+
+ 
+
+	 
+  
+ 
+	 
+  
+  
+  
+ 
+	 
+ " ˘	    ‰20B6*000J*0
+0
+HñÄJ*0
+0
+HñÄJ*0
+0
+HñÄJJ*HH" **002($*HH**HH00HñÄJ02*00HñÄJ02*00HñÄJ
+0HñÄ  
+CppLangParser
+AccessSpecifierContext
+org
+antlr
+v4
+runtime
+ParserRuleContext
+parent
+invokingState
+kotlin
+Int
+Private
+tree
+TerminalNode
+	Protected
+Public
+accept
+T
+Any
+visitor
+ParseTreeVisitor
+	enterRule
+Unit
+listener
+ParseTreeListener
+exitRule
+getRuleIndex   q
+ˇˇˇˇˇˇˇˇˇ  
+  
+
+
+
+
+ 
+	
+
+ 
+
+	 
+ 
+	 
+ 
+	 È   20B6*000JJ*HH" **0	0	2($*HH**HH00HñÄJ*00HñÄJ*00HñÄJ*00HñÄJ02*00HñÄJ02*00HñÄJ*00HñÄJ
+0HñÄJ*00HñÄ  ƒ
+CppLangParser
+FunctionDefinitionContext
+org
+antlr
+v4
+runtime
+ParserRuleContext
+parent
+invokingState
+kotlin
+Int
+accept
+T
+Any
+visitor
+tree
+ParseTreeVisitor
+attributeSpecifierSeq
+AttributeSpecifierSeqContext
+declSpecifierSeq
+DeclSpecifierSeqContext
+
+declarator
+DeclaratorContext
+	enterRule
+Unit
+listener
+ParseTreeListener
+exitRule
+functionBody
+FunctionBodyContext
+getRuleIndex
+virtualSpecifierSeq
+VirtualSpecifierSeqContext   ë
+ˇˇˇˇˇˇˇˇˇ  
+  
+
+
+
+
+ 
+	
+
+ 
+ 
+
+
+ 
+  
+  
+  
+ 
+
+ 
+  
+   
