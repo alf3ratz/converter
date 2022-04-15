@@ -1,21 +1,15 @@
-import com.lordcodes.turtle.shellRun
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
-import com.squareup.kotlinpoet.MemberName
 import com.squareup.kotlinpoet.TypeSpec
 
 import org.jetbrains.kotlin.cli.common.environment.setIdeaIoUseFallback
-import org.jetbrains.kotlin.utils.addToStdlib.safeAs
 import utils.createClassWithPoet
 import utils.makeRightClassName
-import java.io.File
-import java.nio.file.Files
-import java.nio.file.Paths
 import java.util.Map
 import java.util.logging.Level
+import java.util.logging.Logger
 import javax.script.ScriptEngineManager
 import kotlin.reflect.full.primaryConstructor
-import kotlin.reflect.jvm.internal.impl.load.kotlin.JvmType
 
 
 class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBaseListener() {
@@ -38,36 +32,15 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
     }
 
     fun getConvertedCodeWithPoet(): FileSpec {
-        LOGGER.log(Level.INFO, "Ended conversion");
+        val LOGGER: Logger = LoggingUtils.LOGGER
+        LOGGER.log(Level.INFO, "Ended conversion")
         return file.build()
     }
 
-    fun checkIfMethodInClass(ctx: CppLangParser.FunctionDefinitionContext): Boolean {
+    private fun checkIfMethodInClass(ctx: CppLangParser.FunctionDefinitionContext): Boolean {
         val classHeadName = ctx.parent.parent.parent.getChild(0).getChild(1)
         return classHeadName is CppLangParser.ClassHeadNameContext
-
     }
-
-    override fun enterTemplateArgumentList(ctx: CppLangParser.TemplateArgumentListContext?) {
-        println("------- enterTemplateArgumentList-----------")
-        println(ctx!!.text)
-    }
-
-    override fun enterTemplateDeclaration(ctx: CppLangParser.TemplateDeclarationContext?) {
-        println("------- enterTemplateDeclaration-----------")
-        println(ctx!!.text)
-    }
-
-    override fun enterSimpleTemplateId(ctx: CppLangParser.SimpleTemplateIdContext?) {
-        println("------- enterSimpleTemplateId-----------")
-        println(ctx!!.text)
-    }
-
-    override fun enterTemplateName(ctx: CppLangParser.TemplateNameContext?) {
-        println("------- enterTemplateName-----------")
-        println(ctx!!.text)
-    }
-
 
     override fun enterFunctionDefinition(ctx: CppLangParser.FunctionDefinitionContext) {
         if (ctx.getChild(1).text.contains("operator") && ctx.getChild(0).getChild(1) != null) {// Обработка операторов
@@ -101,17 +74,10 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
             if (checkIfMethodInClass(ctx)) {
                 val function = FunctionEntity()
                 function.funName = funName.replace("()", "")
-                function.returnType = returnType//"Any"
+                function.returnType = returnType
                 currentClass!!.methodsInClass.add(function)
             }
-
         }
-        //println(ctx.parent.parent.parent.getChild(0).getChild(1).text) // Получение имени клсаа, в котором находится метод
-
-    }
-
-    override fun enterSimpleDeclaration(ctx: CppLangParser.SimpleDeclarationContext?) {
-// w=w+size; w=w+size; // TODO: распарсить тело метода здесь!!!
     }
 
     override fun enterParameterDeclaration(ctx: CppLangParser.ParameterDeclarationContext?) {
@@ -125,23 +91,11 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
         currentClass!!.methodsInClass.last().arguments[argName] = argsType
     }
 
-
-    override fun enterDeclarationStatement(ctx: CppLangParser.DeclarationStatementContext?) {
-// w=w+size; w=w+size; // TODO: распарсить тело метода здесь!!!
-    }
-
-
     override fun exitFunctionBody(ctx: CppLangParser.FunctionBodyContext?) {
         if (currentClass!!.methodsInClass.size > 0) {
             val function = currentClass!!.methodsInClass.last()
             if (function.isFunction) {
                 val function = FunSpec.builder(function.funName)
-//                        .addModifiers(
-//                            when (privateAccess) {
-//                                "private" -> KModifier.PRIVATE
-//                                else -> KModifier.PUBLIC
-//                            }
-//                        )
                     .returns(
                         when (function.returnType) {
                             "Int" -> Int::class
@@ -158,7 +112,7 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
                 currentTypeSpec!!.addFunction(
                     function
                 )
-            } else { // Если оператор
+            } else {
                 currentTypeSpec!!.addFunction(
                     FunSpec.builder(function.funName)
                         .addParameter(
@@ -226,32 +180,9 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
         }
     }
 
-    override fun enterClassName(ctx: CppLangParser.ClassNameContext) {
-//        // Проверяем, метод какого класса используется
-//        // Если стандартная библиотека, то пропускаем
-//        if (!ignoreClassNameList.contains(ctx.getChild(0).text)) { // TODO: проходит проверку, если объект небиблиотечного класса указан как параметр метода/оператора
-//            if (currentClass != null) {
-//                returnTypeSpec = currentTypeSpec!!.build()
-//                file.addType(
-//                    returnTypeSpec!!
-//                )
-//            }
-//            currentClass = ClassEntity()
-//            val name = ctx.getChild(0).text
-//            currentClass!!.name = name
-//            currentTypeSpec = TypeSpec.classBuilder(currentClass!!.name)
-//
-//
-//            println("className: " + ctx.getChild(0).text)
-//            println(ctx.getChild(0).childCount)
-//        }
-    }
-
     override fun enterClassSpecifier(ctx: CppLangParser.ClassSpecifierContext) {
-        // Проверяем, метод какого класса используется
-        // Если стандартная библиотека, то пропускаем
         val className = makeRightClassName(ctx.getChild(0).getChild(1).text)
-        if (!ignoreClassNameList.contains(className)) { // TODO: проходит проверку, если объект небиблиотечного класса указан как параметр метода/оператора
+        if (!ignoreClassNameList.contains(className)) {
             currentClass = ClassEntity()
             currentClass!!.name = className
             currentTypeSpec = TypeSpec.classBuilder(className)
@@ -264,14 +195,7 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
         )
     }
 
-    override fun enterClassHead(ctx: CppLangParser.ClassHeadContext) {// TODO: ctx.classKey().text
-        //println("classHead: "+ )
-    }
-
-
     override fun enterAccessSpecifier(ctx: CppLangParser.AccessSpecifierContext?) {
-        super.enterAccessSpecifier(ctx)
-        //println("AccessSpecifier: ${ctx!!.text}")
         if (ctx!!.text == "private") {
             privateAccess = "private"
         }

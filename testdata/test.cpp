@@ -1,5 +1,5 @@
 #include <iostream>
-//using namespace std;
+using namespace std;
 
 class Test {
     void testFun(int a) {
@@ -10,3 +10,10 @@ class Test {
 
     }
 };
+
+
+
+
+
+
+

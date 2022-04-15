@@ -1,5 +1,3 @@
-import java.util.Collections.emptyMap
-
 class FunctionEntity {
     var isFunction:Boolean = true
     var funName:String = ""

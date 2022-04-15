@@ -1,11 +1,11 @@
 import com.github.ajalt.clikt.core.UsageError
 import com.github.ajalt.clikt.output.TermUi
 import kotlinx.cli.*
+import org.antlr.v4.runtime.ANTLRInputStream
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTreeWalker
 import utils.makeRightClassName
 import java.io.File
-import java.io.FileWriter
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
@@ -13,7 +13,7 @@ import java.util.logging.Level
 import java.util.logging.Logger
 import kotlin.io.path.exists
 
-val LOGGER: Logger = LoggingUtils.LOGGER//Logger.getLogger(AstListener::class.java.name)
+val LOGGER: Logger = LoggingUtils.LOGGER
 
 private fun printUsage(program: String) {
     println(
@@ -30,10 +30,9 @@ Usage: $program [<options>] <cpp.h files>
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """.trimIndent()
     )
-}//C:\\Users\\User1337\\IdeaProjects\\converterw\\testdata\\test.cpp
-//C:\\Users\\User1337\\IdeaProjects\\converterw\\resultdata\\testKt.kt
+}
 
-fun runWithoutArguments(): List<String> {
+private fun runWithoutArguments(): List<String> {
     val inputPath = TermUi.prompt("Enter input cpp/h file path: ") {
         when (Path.of(it).exists()) {
             true -> it
@@ -49,13 +48,16 @@ fun runWithoutArguments(): List<String> {
     return listOf(inputPath!!, outputPath!!)
 }
 
-// TODO: првоерить работу на новой машинке
-// TODO: проверить работу при передачи пути до папки, в которой есть папки
-// TODO: Написать логирование
-// TODO: Сделать декомпоз
-// TODO: Сделать запуск двух джарников
-// TODO:
 fun main(args: Array<String>) {
+    try {
+        startConversion(args)
+    } catch (ex: Exception) {
+        LOGGER.log(Level.WARNING, "Conversion exception");
+        return
+    }
+}
+
+fun startConversion(args: Array<String>) {
     LOGGER.log(Level.INFO, "Getting arguments");
     val argsParser = ArgParser("c2k")
     val input by argsParser.option(ArgType.String, shortName = "i", description = "Input file").required()
@@ -81,12 +83,17 @@ fun main(args: Array<String>) {
             writeToFileWithPoet(pathToFiles[1], sourceFileName, parser)
         }
     } else {
-        val cppCodeAsString = Files.readString(
-            Path.of(pathToFiles[0]).toAbsolutePath(), // TODO: решить проблему с абсолютным и относительным путём
-            StandardCharsets.US_ASCII
-        )
+        var cppCodeAsString: String
+        try {
+            cppCodeAsString = Files.readString(
+                Path.of(pathToFiles[0]).toAbsolutePath(),
+                StandardCharsets.US_ASCII
+            )
+        } catch (e: Exception) {
+            LOGGER.log(Level.WARNING, "Wrong path to file");
+            return
+        }
         val parser = createParser(cppCodeAsString)
-        //writeToFile(args[1], parser)
         var sourceFileName = Path.of(pathToFiles[0]).fileName.toString().replace(".cpp", "")
         sourceFileName = makeRightClassName(sourceFileName)
         LOGGER.log(Level.INFO, "Starting conversion");
@@ -94,37 +101,30 @@ fun main(args: Array<String>) {
     }
 }
 
-
 fun createParser(cppCodeAsString: String): CppLangParser {
-    val lexer = CppLangLexer(org.antlr.v4.runtime.ANTLRInputStream(cppCodeAsString))
+    val lexer = CppLangLexer(ANTLRInputStream(cppCodeAsString))
     val tokens = CommonTokenStream(lexer)
     return CppLangParser(tokens)
-}
-
-fun writeToFile(pathToKtFile: String?, parser: CppLangParser) {
-    val writer = FileWriter(pathToKtFile!!, false)
-    val tree = parser.translationUnit()
-    val walker = ParseTreeWalker()
-    val extractor = AstListener(parser, "")
-    walker.walk(extractor, tree)
-    writer.write(extractor.getConvertedCode())
-    writer.close()
 }
 
 fun writeToFileWithPoet(pathToKtFile: String?, sourceFileName: String?, parser: CppLangParser) {
     val tree = parser.translationUnit()
     val walker = ParseTreeWalker()
     val extractor = AstListener(parser, sourceFileName!!)
-    walker.walk(extractor, tree)
+    try {
+        walker.walk(extractor, tree)
+    } catch (ex: Exception) {
+        LOGGER.log(Level.WARNING, "Conversion exception. Wrong input code");
+        return
+    }
     val file = extractor.getConvertedCodeWithPoet()
     val f = File(pathToKtFile + sourceFileName)
-//    var app = StringBuilder(f.toString())
-//    val res = FileOutputStream(f, true).bufferedWriter().use { writer ->
-//        writer.write(file.toString())
-//        writer.flush()
-//        writer.close()
-//    }
-    file.writeTo(Path.of(pathToKtFile!!))
-    println("\n~~~ DONE ~~~")
+    try {
+        file.writeTo(Path.of(pathToKtFile!!))
+    } catch (ex: Exception) {
+        LOGGER.log(Level.WARNING, "Exception while writing to file");
+        return
+    }
+    LOGGER.log(Level.INFO, "Conversion done");
 }
 
