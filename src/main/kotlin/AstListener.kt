@@ -89,10 +89,27 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
     }
 
     override fun exitPostfixExpression(ctx: PostfixExpressionContext) {
-        if (ctx.childCount == 3 && ctx.getChild(1).text == ".") {
+        if (ctx.childCount == 3 && ctx.getChild(0).childCount == 3 && ctx.getChild(0).getChild(1).text == ".") {
             val secondArg = code.pop()
             val firstArg = code.pop()
-            code.push("$firstArg.$secondArg")
+            code.push("$firstArg.$secondArg()")
+        }
+        if (ctx.childCount == 4 && ctx.getChild(0).childCount == 3 && ctx.getChild(0).getChild(1).text == ".") {
+            val args = arrayListOf<String>()
+            for (i in 0..(ctx.getChild(2).getChild(0).childCount / 2)) {
+                args.add(code.pop())
+            }
+            val secondArg = code.pop()
+            val firstArg = code.pop()
+            code.push("$firstArg.$secondArg(${args.reversed().joinToString(", ")})")
+        }
+    }
+
+    override fun exitCastExpression(ctx: CastExpressionContext) {
+        if (ctx.childCount == 4) {
+            val type = parseType(ctx.getChild(1).text)
+            file.addType(TypeSpec.classBuilder(stringToType(type)).build())
+            code.push("(${code.pop()} as $type)")
         }
     }
 
