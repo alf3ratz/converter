@@ -151,6 +151,37 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
             currentFunction!!.addStatement("return ${code.pop()}")
     }
 
+    private fun defaultValue(type: String): String = when (type) {
+        "Byte" -> "0"
+        "Short" -> "0"
+        "Int" -> "0"
+        "Long" -> "0L"
+        "UByte" -> "0u"
+        "UShort" -> "0u"
+        "UInt" -> "0u"
+        "ULong" -> "0uL"
+        "String" -> "\"\""
+        "Float" -> "0.0f"
+        "Double" -> "0.0"
+        "Boolean" -> "false"
+        "Unit" -> "()"
+        "Any" -> "()"
+        else -> "$type()"
+    }
+
+    override fun enterNoPointerDeclarator(ctx: NoPointerDeclaratorContext) {
+        if (ctx.childCount == 4) {
+            val type = parseType(ctx.parent.parent.parent.parent.parent.getChild(0).text)
+            currentFunction!!.addStatement(
+                "val ${ctx.getChild(0).text}: %T<%T> = List<$type>(${ctx.getChild(2).text}, { ${
+                    defaultValue(
+                        type
+                    )
+                } })", List::class, stringToType(type)
+            )
+        }
+    }
+
     override fun exitAssignmentExpression(ctx: AssignmentExpressionContext) {
         val ctx1 = ctx.parent.parent
         if (ctx1.childCount == 2 && ctx1.getChild(0).text == "=") {
@@ -313,6 +344,10 @@ class AstListener(val parser: CppLangParser?, val fileName: String) : CppLangBas
 
     override fun enterOperatorFunctionId(ctx: OperatorFunctionIdContext?) {
         super.enterOperatorFunctionId(ctx)
+    }
+
+    override fun exitExpressionStatement(ctx: ExpressionStatementContext) {
+        currentFunction!!.addStatement(code.pop())
     }
 
     private fun removeMethodParameters(methodDecl: String): String {
