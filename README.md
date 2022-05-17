@@ -27,5 +27,5 @@ or command
 
 Command itself has format
 ```
-c2k [<options>] <output directory> <cpp.h files>
+c2k [<options>] -o <output directory> -i <cpp.h files>
 ```
