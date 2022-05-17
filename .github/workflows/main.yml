@@ -24,30 +24,14 @@ jobs:
       uses: actions/setup-java@v1
       with: 
         java-version: 11
-#     - name: 'gradle init'
-#       run: gradle init
-#     - name: 'gradle wrapper'
-#       run: gradle wrapper --gradle-version 7.4
     - name: 'Add gradlew'
       run: chmod +x gradlew
     - name: build
       run: ./gradlew build
     - name: test
       run: ./gradlew test
-#     - name: init
-#       run: ./gradlew init
     - name: Gen .jar
       run: ./gradlew assemble
-#     - name: Validate Gradle wrapper
-#       uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
-#     - name: Build with Gradle
-#       uses: gradle/gradle-build-action@937999e9cc2425eddc7fd62d1053baf041147db7
-#       with:
-#         arguments: build
-#     - uses: actions/upload-artifact@v2
-#       with:
-#         name: Package
-#         path: build/libs
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
@@ -65,6 +49,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-        asset_path: ./build/libs/converter-1.0-SNAPSHOT.jar
+        asset_path: ./build/libs/converter.jar
         asset_name: converter.jar
         asset_content_type: application/jar
