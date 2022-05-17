@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/converter.iml" filepath="$PROJECT_DIR$/.idea/modules/converter.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/cli-app/converter.cli-app.iml" filepath="$PROJECT_DIR$/.idea/modules/cli-app/converter.cli-app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/converter.main.iml" filepath="$PROJECT_DIR$/.idea/modules/converter.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/converter.test.iml" filepath="$PROJECT_DIR$/.idea/modules/converter.test.iml" />
+    </modules>
+  </component>
+</project>
