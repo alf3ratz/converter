@@ -31,7 +31,7 @@ jobs:
     - name: test
       run: ./gradlew test
     - name: Gen .jar
-      run: ./gradlew assemble
+      run: ./gradlew c2k
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
